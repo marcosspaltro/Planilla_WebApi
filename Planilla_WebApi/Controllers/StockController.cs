@@ -19,22 +19,28 @@ namespace Planilla_WebApi.Controllers
         }
 
         // GET api/<Stock>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{prod}")]
+        public Stock Get(int prod)
         {
-            return "value";
+            dbDatos datos = new dbDatos();
+            
+            return datos.Stocks(prod);
         }
 
         // POST api/<Stock>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] Stock value)
         {
+            dbDatos datos = new dbDatos();
+            datos.Agregar(value);
         }
 
         // PUT api/<Stock>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut]
+        public void Put([FromBody] Stock value)
         {
+            dbDatos datos = new dbDatos();
+            datos.Actualizar(value);
         }
 
         // DELETE api/<Stock>/5
