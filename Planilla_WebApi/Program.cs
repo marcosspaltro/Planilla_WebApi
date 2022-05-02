@@ -10,6 +10,14 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+app.UseCors(builder =>
+{
+    builder
+    .WithOrigins("https://localhost:7056", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")
+    .AllowAnyMethod()
+    .AllowAnyHeader();
+});
+
 app.UseAuthorization();
 
 app.MapControllers();
