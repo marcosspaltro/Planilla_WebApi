@@ -32,7 +32,7 @@ namespace Planilla_WebApi.Controllers
         public void Post([FromBody] Stock value)
         {
             dbDatos datos = new dbDatos();
-            datos.Agregar(value);
+            datos.Actualizar(value);
         }
 
         // PUT api/<Stock>/5

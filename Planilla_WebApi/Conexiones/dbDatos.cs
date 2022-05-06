@@ -76,6 +76,7 @@ namespace Planilla_WebApi.Conexiones
 
         internal void Agregar(Stock value)
         {
+
             sql.Open();
             SqlCommand cmd = new SqlCommand($"INSERT INTO Stock (Fecha, ID_Sucursales, ID_Productos, Descripcion, Kilos) VALUES(" +
                 $"'{Fecha:MM/dd/yyyy}', {Sucursal}, {value.Producto}, '{value.Descripcion}', {value.Kilos.ToString().Replace(",", ".")})", sql);
