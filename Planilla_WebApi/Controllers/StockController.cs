@@ -10,6 +10,7 @@ namespace Planilla_WebApi.Controllers
     [ApiController]
     public class StockController : ControllerBase
     {
+
         // GET: api/<Stock>
         [HttpGet]
         public IList<Stock> Get()
