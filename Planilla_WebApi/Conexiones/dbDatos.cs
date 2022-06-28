@@ -1,12 +1,15 @@
-﻿using Planilla_WebApi.Modelos;
+﻿using Microsoft.AspNetCore.Identity;
+using Planilla_WebApi.Modelos;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
 
 namespace Planilla_WebApi.Conexiones
 {
     public class dbDatos
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos2;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
 
         public int Sucursal { get; set; }
         public string? Nombre { get; set; }
@@ -124,6 +127,52 @@ namespace Planilla_WebApi.Conexiones
                 Console.WriteLine(ex.Message);
                 _Stock = null;
                 return _Stock;
+            }
+        }
+
+        public IList<User> Usuarios()
+        {
+            List<User> nlist = new();
+
+            sql.Open();
+            SqlCommand cmd = new SqlCommand("SELECT * FROM Usuarios_Web", sql);
+            cmd.CommandType = CommandType.Text;
+            
+            try
+            {
+                SqlDataReader dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    User user = new User();
+
+                    user.Username = dr["Usuario"].ToString();
+                    CreatePasswordHash(dr["Contraseña"].ToString(), out byte[] passwordHash, out byte[] passwordSalt);
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+
+                    nlist.Add(user);
+                }
+
+                dr.Close();
+                sql.Close();
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                nlist = null;                
+            }            
+
+            return nlist;
+        }
+
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             }
         }
     }

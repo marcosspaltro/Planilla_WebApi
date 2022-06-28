@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
@@ -10,44 +11,50 @@ namespace Planilla_WebApi.Controllers
     [ApiController]
     public class StockController : ControllerBase
     {
+        private readonly ILogger<StockController> _logger;
+
+        public StockController(ILogger<StockController> logger)
+        {
+            _logger = logger;
+        }
 
         // GET: api/<Stock>
-        [HttpGet]
+        [HttpGet(Name = "GetStock"), Authorize]
         public IList<Stock> Get()
         {
             dbDatos datos = new dbDatos();
             return datos.Stocks();
         }
 
-        // GET api/<Stock>/5
-        [HttpGet("{prod}")]
-        public Stock Get(int prod)
-        {
-            dbDatos datos = new dbDatos();
-            
-            return datos.Stocks(prod);
-        }
+        //// GET api/<Stock>/5
+        //[HttpGet("{prod}"), Authorize]
+        //public Stock Get(int prod)
+        //{
+        //    dbDatos datos = new dbDatos();
 
-        // POST api/<Stock>
-        [HttpPost]
-        public void Post([FromBody] Stock value)
-        {
-            dbDatos datos = new dbDatos();
-            datos.Actualizar(value);
-        }
+        //    return datos.Stocks(prod);
+        //}
 
-        // PUT api/<Stock>/5
-        [HttpPut]
-        public void Put([FromBody] Stock value)
-        {
-            dbDatos datos = new dbDatos();
-            datos.Actualizar(value);
-        }
+        //// POST api/<Stock>
+        //[HttpPost, Authorize]
+        //public void Post([FromBody] Stock value)
+        //{
+        //    dbDatos datos = new dbDatos();
+        //    datos.Actualizar(value);
+        //}
 
-        // DELETE api/<Stock>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+        //// PUT api/<Stock>/5
+        //[HttpPut, Authorize]
+        //public void Put([FromBody] Stock value)
+        //{
+        //    dbDatos datos = new dbDatos();
+        //    datos.Actualizar(value);
+        //}
+
+        //// DELETE api/<Stock>/5
+        //[HttpDelete("{id}")]
+        //public void Delete(int id)
+        //{
+        //}
     }
 }
