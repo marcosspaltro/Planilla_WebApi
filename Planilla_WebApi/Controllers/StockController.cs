@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
@@ -11,11 +12,18 @@ namespace Planilla_WebApi.Controllers
     [ApiController]
     public class StockController : ControllerBase
     {
-        private readonly ILogger<StockController> _logger;
+        //private readonly ILogger<StockController> _logger;
 
-        public StockController(ILogger<StockController> logger)
-        {
-            _logger = logger;
+        //public StockController(ILogger<StockController> logger)
+        //{
+        //    _logger = logger;
+        //}
+        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
+        public StockController(IConfiguration configuration, IUserService userService)
+{
+            _configuration = configuration;
+            _userService = userService;
         }
 
         // GET: api/<Stock>
@@ -24,6 +32,7 @@ namespace Planilla_WebApi.Controllers
         {
             dbDatos datos = new dbDatos();
             return datos.Stocks();
+            
         }
 
         //// GET api/<Stock>/5

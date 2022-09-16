@@ -54,7 +54,8 @@ app.UseHttpsRedirection();
 app.UseCors(builder =>
 {
     builder
-    .WithOrigins("https://localhost", "http://127.0.0.1", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")    
+    //.WithOrigins("https://localhost", "https://192.168.1.3", "https://192.168.1.1", "https://192.168.1.11", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")    
+    .WithOrigins("*")    
     .AllowAnyMethod()
     .AllowAnyHeader();
 });

@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Planilla_WebApi.Conexiones;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -31,17 +29,17 @@ namespace Planilla_WebApi.Controllers
             return Ok(userName);
         }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
-        {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        //[HttpPost("register")]
+        //public async Task<ActionResult<User>> Register(UserDto request)
+        //{
+        //    CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            user.Username = request.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+        //    user.Username = request.Username;
+        //    user.PasswordHash = passwordHash;
+        //    user.PasswordSalt = passwordSalt;
 
-            return Ok(user);
-        }
+        //    return Ok(user);
+        //}
 
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
@@ -79,7 +77,7 @@ namespace Planilla_WebApi.Controllers
             {
                 return Unauthorized("Invalid Refresh Token.");
             }
-            else if(user.TokenExpires < DateTime.Now)
+            else if (user.TokenExpires < DateTime.Now)
             {
                 return Unauthorized("Token expired.");
             }
