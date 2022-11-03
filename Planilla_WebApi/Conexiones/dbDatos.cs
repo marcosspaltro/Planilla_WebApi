@@ -11,6 +11,18 @@ namespace Planilla_WebApi.Conexiones
     {
         SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
 
+
+        public class datamodel
+        {
+            public DateTime fecha { get; set; }
+            public int suc { get; set; }
+            public int id_prod { get; set; }
+            public string desc { get; set; }
+            public double costo { get; set; }
+            public double kilos { get; set; }
+        }
+
+
         public int Sucursal { get; set; }
         public string? Nombre { get; set; }
         public DateTime Fecha { get; set; }
@@ -19,17 +31,23 @@ namespace Planilla_WebApi.Conexiones
         {
             Sucursal = 1;
             Nombre = "LOS ALAMOS";
-            Fecha = new DateTime(2022, 3, 20);
+            Fecha = DateTime.Now;
         }
 
-        public IList<Stock>? Stocks()
+        public IList<Stock>? Stocks(int f_suc)
         {
+            DateTime f = DateTime.Now;
+            int rd = (int)f.DayOfWeek;
+
+            if (rd < 3) {  f = f.AddDays(-rd); }
+            else { f = f.AddDays(rd - 1); }
+
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
-                $", ISNULL((SELECT Kilos FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
+                $", ISNULL((SELECT Kilos FROM Stock WHERE Id_Sucursales={f_suc} AND Fecha='{f:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
                 $"AS Kilos" +
-                $", {Sucursal} AS ID_Sucursales, CONVERT(DATETIME, '{Fecha:MM/dd/yyyy}') AS Fecha" +
-                $", ISNULL((SELECT TOP 1 ID FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
+                $", {f_suc} AS ID_Sucursales, CONVERT(DATETIME, '{f:MM/dd/yyyy}') AS Fecha" +
+                $", ISNULL((SELECT TOP 1 ID FROM Stock WHERE Id_Sucursales={f_suc} AND Fecha='{f:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
                 $"AS ID_Stock" +
                 $", Id_Tipo" +
                 $" FROM Productos WHERE Ver = 1 ORDER BY Id_Tipo, Id", sql);
@@ -88,47 +106,68 @@ namespace Planilla_WebApi.Conexiones
             sql.Close();
         }
 
-        public Stock Stocks(int prod)
+        public int cant_prods()
         {
             sql.Open();
-            SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
-                $", ISNULL((SELECT Kilos FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
-                $"AS Kilos" +
-                $", {Sucursal} AS ID_Sucursales, CONVERT(DATETIME, '{Fecha:MM/dd/yyyy}') AS Fecha" +
-                $", ISNULL((SELECT TOP 1 ID FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
-                $"AS ID_Stock" +
-                $", Id_Tipo" +
-                $" FROM Productos WHERE Id={prod} ORDER BY Id_Tipo, Id", sql);
+            SqlCommand cmd = new SqlCommand($"SELECT COUNT(ID) FROM Productos WHERE ver=1 ", sql);
             cmd.CommandType = CommandType.Text;
 
-            Stock _Stock = new();
+            int d = 0;
+
             try
             {
-                SqlDataReader dr = cmd.ExecuteReader();
-
-                if (dr.Read())
-                {
-                    _Stock.ID = Convert.ToInt32(dr["ID_Stock"]);
-                    _Stock.Fecha = Convert.ToDateTime(dr["Fecha"].ToString());
-                    _Stock.Sucursal = Convert.ToInt32(dr["ID_Sucursales"]);
-                    _Stock.Producto = Convert.ToInt32(dr["ID"]);
-                    _Stock.Tipo = Convert.ToInt32(dr["Id_Tipo"]);
-                    _Stock.Descripcion = dr["Descripcion"].ToString();
-                    _Stock.Kilos = Convert.ToSingle(dr["Kilos"]);
-                }
-
-                dr.Close();
+                SqlDataAdapter daAdapt = new SqlDataAdapter(cmd);
+                d = (int)cmd.ExecuteScalar();
                 sql.Close();
-
-                return _Stock;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                _Stock = null;
-                return _Stock;
             }
+
+            return d;
         }
+
+        //public Stock Stocks(int prod)
+        //{
+        //    sql.Open();
+        //    SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
+        //        $", ISNULL((SELECT Kilos FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
+        //        $"AS Kilos" +
+        //        $", {Sucursal} AS ID_Sucursales, CONVERT(DATETIME, '{Fecha:MM/dd/yyyy}') AS Fecha" +
+        //        $", ISNULL((SELECT TOP 1 ID FROM Stock WHERE Id_Sucursales={Sucursal} AND Fecha='{Fecha:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
+        //        $"AS ID_Stock" +
+        //        $", Id_Tipo" +
+        //        $" FROM Productos WHERE Id={prod} ORDER BY Id_Tipo, Id", sql);
+        //    cmd.CommandType = CommandType.Text;
+
+        //    Stock _Stock = new();
+        //    try
+        //    {
+        //        SqlDataReader dr = cmd.ExecuteReader();
+
+        //        if (dr.Read())
+        //        {
+        //            _Stock.ID = Convert.ToInt32(dr["ID_Stock"]);
+        //            _Stock.Fecha = Convert.ToDateTime(dr["Fecha"].ToString());
+        //            _Stock.Sucursal = Convert.ToInt32(dr["ID_Sucursales"]);
+        //            _Stock.Producto = Convert.ToInt32(dr["ID"]);
+        //            _Stock.Tipo = Convert.ToInt32(dr["Id_Tipo"]);
+        //            _Stock.Descripcion = dr["Descripcion"].ToString();
+        //            _Stock.Kilos = Convert.ToSingle(dr["Kilos"]);
+        //        }
+
+        //        dr.Close();
+        //        sql.Close();
+
+        //        return _Stock;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //        _Stock = null;
+        //        return _Stock;
+        //    }
+        //}
 
         public IList<User> Usuarios()
         {
@@ -173,6 +212,43 @@ namespace Planilla_WebApi.Conexiones
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        public void Agregar_registro(DateTime Fecha, int Suc, int Id_prod, double Kilos)
+        {
+            //try
+            //{
+            //    SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {Suc} AND Fecha= '{Fecha.ToString("MM/dd/yyy")}' AND Id_Productos = {Id_prod}", sql);
+            //    command.CommandType = CommandType.Text;
+            //    command.Connection = sql;
+            //    sql.Open();
+
+            //    var d = command.ExecuteNonQuery();
+
+            //    sql.Close();
+            //}
+            //catch (Exception e)
+            //{
+            //}
+
+            try
+            {
+                SqlCommand command =
+                    new SqlCommand($"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
+                        $"VALUES('11/23/2025', {Suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}) + '{Fecha.ToString("MM/dd/yyy")}', " +
+                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Productos = {Id_prod} AND Fecha <= '{Fecha.ToString("MM/dd/yyy")}' ORDER BY Fecha DESC), {Kilos.ToString().Replace(",", ".")})", sql);
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+
+            }
+            catch (Exception e)
+            {
             }
         }
     }

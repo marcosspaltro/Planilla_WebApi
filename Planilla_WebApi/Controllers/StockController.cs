@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
@@ -20,19 +21,19 @@ namespace Planilla_WebApi.Controllers
         //}
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+
         public StockController(IConfiguration configuration, IUserService userService)
 {
             _configuration = configuration;
             _userService = userService;
         }
 
-        // GET: api/<Stock>
+     //   GET: api/<Stock>
         [HttpGet(Name = "GetStock"), Authorize]
-        public IList<Stock> Get()
+        public IList<Stock> Get(int suc)
         {
             dbDatos datos = new dbDatos();
-            return datos.Stocks();
-            
+            return datos.Stocks(suc);
         }
 
         //// GET api/<Stock>/5
@@ -44,22 +45,44 @@ namespace Planilla_WebApi.Controllers
         //    return datos.Stocks(prod);
         //}
 
-        //// POST api/<Stock>
+        // POST api/<Stock>
         //[HttpPost, Authorize]
         //public void Post([FromBody] Stock value)
         //{
-        //    dbDatos datos = new dbDatos();
-        //    datos.Actualizar(value);
+        //    string jsonString = s.id_prod.ToString() + s.fecha.ToString() + s.kilos.ToString() + s.suc.ToString();
+        //    System.IO.File.WriteAllText(@"D:\Tarjetas\EscribeTexto.txt", jsonString);
+        //    return Ok("crack fiera idolo");
         //}
 
-        //// PUT api/<Stock>/5
-        //[HttpPut, Authorize]
-        //public void Put([FromBody] Stock value)
-        //{
-        //    dbDatos datos = new dbDatos();
-        //    datos.Actualizar(value);
-        //}
+        // PUT api/<Stock>/5
 
+        [HttpPost(Name ="PostStock"), Authorize]
+        public ActionResult POST([FromBody]Stock_sub s)
+        {
+
+            //if (jsonString != null)
+            //{
+            //    char ch = '}';
+            //    int t_prods = jsonString.Count(f => (f == ch));
+
+            //    for (int i = 0; i < t_prods; i++)
+            //    {
+            //        string k = jsonString.Substring(jsonString.IndexOf("{"), jsonString.IndexOf("}") - jsonString.IndexOf("{") + 1);
+            //        dbDatos.datamodel m = JsonConvert.DeserializeObject<dbDatos.datamodel>(k);
+            //        jsonString = jsonString.Substring(jsonString.IndexOf("{") + 1);
+            //        if (jsonString.IndexOf("{") > 0)
+            //        { jsonString = jsonString.Substring(jsonString.IndexOf("{")); }
+
+            //        dbDatos datos = new dbDatos();
+
+            //        datos.Agregar_registro(m.fecha, m.suc, m.id_prod, m.kilos);
+            //    }
+            dbDatos datos = new dbDatos();
+            datos.Agregar_registro(s.fecha, s.suc, s.id_prod, s.kilos);
+            return Ok(s._id);
+            //}
+            //else { return BadRequest(); }
+        }
         //// DELETE api/<Stock>/5
         //[HttpDelete("{id}")]
         //public void Delete(int id)

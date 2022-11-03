@@ -60,7 +60,7 @@ namespace Planilla_WebApi.Controllers
                 return BadRequest("Error en el usuario o contraseña");
             }
 
-            string token = CreateToken(user);
+            string [] token = { CreateToken(user), "0"};
 
             var refreshToken = GenerateRefreshToken();
             SetRefreshToken(refreshToken);
