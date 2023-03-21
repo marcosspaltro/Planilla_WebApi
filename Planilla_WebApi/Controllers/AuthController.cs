@@ -12,7 +12,7 @@ namespace Planilla_WebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
+        public User user = new User();
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
 
@@ -49,7 +49,6 @@ namespace Planilla_WebApi.Controllers
 
             user = usuaros.First(x => x.Username == request.Username);
 
-
             if (user == null)
             {
                 return BadRequest("Error en el usuario o contraseña");
@@ -59,8 +58,9 @@ namespace Planilla_WebApi.Controllers
             {
                 return BadRequest("Error en el usuario o contraseña");
             }
-
-            string [] token = { CreateToken(user), "0"};
+            string a = CreateToken(user);
+            string b = user.suc.ToString();
+            string [] token = { a, b , user.Username};
 
             var refreshToken = GenerateRefreshToken();
             SetRefreshToken(refreshToken);
@@ -130,7 +130,7 @@ namespace Planilla_WebApi.Controllers
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.Now.AddDays(10),
                 signingCredentials: creds);
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);

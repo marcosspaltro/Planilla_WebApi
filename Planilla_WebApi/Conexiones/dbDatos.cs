@@ -40,7 +40,7 @@ namespace Planilla_WebApi.Conexiones
             int rd = (int)f.DayOfWeek;
 
             if (rd < 3) {  f = f.AddDays(-rd); }
-            else { f = f.AddDays(rd - 1); }
+            else { f = f.AddDays(7 - rd); }
 
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
@@ -97,7 +97,6 @@ namespace Planilla_WebApi.Conexiones
 
         internal void Agregar(Stock value)
         {
-
             sql.Open();
             SqlCommand cmd = new SqlCommand($"INSERT INTO Stock (Fecha, ID_Sucursales, ID_Productos, Descripcion, Kilos) VALUES(" +
                 $"'{Fecha:MM/dd/yyyy}', {Sucursal}, {value.Producto}, '{value.Descripcion}', {value.Kilos.ToString().Replace(",", ".")})", sql);
@@ -187,6 +186,7 @@ namespace Planilla_WebApi.Conexiones
 
                     user.Username = dr["Usuario"].ToString();
                     CreatePasswordHash(dr["Contraseña"].ToString(), out byte[] passwordHash, out byte[] passwordSalt);
+                    user.suc = Convert.ToInt32(dr["Sucursal"]);
                     user.PasswordHash = passwordHash;
                     user.PasswordSalt = passwordSalt;
 
@@ -206,6 +206,7 @@ namespace Planilla_WebApi.Conexiones
             return nlist;
         }
 
+        
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())
@@ -217,27 +218,12 @@ namespace Planilla_WebApi.Conexiones
 
         public void Agregar_registro(DateTime Fecha, int Suc, int Id_prod, double Kilos)
         {
-            //try
-            //{
-            //    SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {Suc} AND Fecha= '{Fecha.ToString("MM/dd/yyy")}' AND Id_Productos = {Id_prod}", sql);
-            //    command.CommandType = CommandType.Text;
-            //    command.Connection = sql;
-            //    sql.Open();
-
-            //    var d = command.ExecuteNonQuery();
-
-            //    sql.Close();
-            //}
-            //catch (Exception e)
-            //{
-            //}
-
             try
             {
                 SqlCommand command =
                     new SqlCommand($"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
-                        $"VALUES('11/23/2025', {Suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}) + '{Fecha.ToString("MM/dd/yyy")}', " +
-                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Productos = {Id_prod} AND Fecha <= '{Fecha.ToString("MM/dd/yyy")}' ORDER BY Fecha DESC), {Kilos.ToString().Replace(",", ".")})", sql);
+                        $"VALUES('{Fecha.ToString("MM/dd/yyy")}', {Suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Productos = {Id_prod} AND Fecha <= '{Fecha.ToString("MM/dd/yyy")}' ORDER BY Fecha DESC), {Math.Round(Kilos, 3).ToString().Replace(",", ".")})", sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
                 sql.Open();
@@ -250,7 +236,93 @@ namespace Planilla_WebApi.Conexiones
             catch (Exception e)
             {
             }
+
+            try
+            {
+                SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {Suc} AND Fecha = '{Fecha.ToString("MM/dd/yyy")}' AND Id_Productos = {Id_prod} AND id <> " +
+                    $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {Suc} AND Fecha = '{Fecha.ToString("MM/dd/yyy")}' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+            }
+            catch (Exception e)
+            {
+            }
+
         }
+
+        public int Agregar_Buzones(DateTime Fecha, double Importe, int Suc)
+        {
+            int s = 0;
+            try
+            {
+                SqlCommand command =
+                    new SqlCommand($"INSERT INTO Fecha_Entregas (Fecha, Importe, Suc) " +
+                        $"VALUES ('{Fecha.ToString("MM/dd/yyy")}', {Math.Round(Importe, 3).ToString().Replace(",", ".")}, {Suc})");
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+
+                s = Max_ID("Fecha_Entregas", "ID");
+
+            }
+            catch (Exception e)
+            {
+            }
+            return s;
+
+        }
+
+        public void Eliminar_Buzones(DateTime fecha, int suc, int id)
+        {
+            try
+            {
+                SqlCommand command = new SqlCommand($"DELETE FROM Fecha_Entregas WHERE Id = {id} AND Fecha = '{Fecha.ToString("MM/dd/yyy")}' AND Suc = {suc}", sql);
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+            }
+            catch (Exception e)
+            {
+            }
+        }
+
+        public int Max_ID(string tabla, string Campo_ID)
+        {
+            int d = 0;
+
+            try
+            {
+                string Cadena = $"SELECT MAX({Campo_ID}) FROM {tabla}";
+
+                SqlCommand cmd = new SqlCommand(Cadena, sql);
+                cmd.CommandType = CommandType.Text;
+
+                sql.Open();
+                SqlDataAdapter daAdapt = new SqlDataAdapter(cmd);
+                d = (int)cmd.ExecuteScalar();
+
+                sql.Close();
+            }
+            catch (Exception)
+            {
+            }
+
+            return d;
+        }
+
     }
 }
 
