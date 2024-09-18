@@ -53,7 +53,7 @@ namespace Planilla_WebApi.Controllers
             {
                 return BadRequest("Error en el usuario o contraseña");
             }
-
+            
             if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 return BadRequest("Error en el usuario o contraseña");
