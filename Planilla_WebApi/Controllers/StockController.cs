@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
@@ -13,80 +11,63 @@ namespace Planilla_WebApi.Controllers
     [ApiController]
     public class StockController : ControllerBase
     {
-        //private readonly ILogger<StockController> _logger;
-
-        //public StockController(ILogger<StockController> logger)
-        //{
-        //    _logger = logger;
-        //}
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
 
         public StockController(IConfiguration configuration, IUserService userService)
-{
+        {
             _configuration = configuration;
             _userService = userService;
         }
 
-     //   GET: api/<Stock>
+
+        //   GET: api/<Stock>
         [HttpGet(Name = "GetStock"), Authorize]
-        public IList<Stock> Get(int suc)
+        public IList<Stock> Get(int suc, int tipo = 0, string semana = "1/1/2000")
         {
             dbDatos datos = new dbDatos();
-            return datos.Stocks(suc);
+            return datos.Stocks(suc, tipo, semana);
         }
 
-        //// GET api/<Stock>/5
-        //[HttpGet("{prod}"), Authorize]
-        //public Stock Get(int prod)
-        //{
-        //    dbDatos datos = new dbDatos();
 
-        //    return datos.Stocks(prod);
-        //}
-
-        // POST api/<Stock>
-        //[HttpPost, Authorize]
-        //public void Post([FromBody] Stock value)
-        //{
-        //    string jsonString = s.id_prod.ToString() + s.fecha.ToString() + s.kilos.ToString() + s.suc.ToString();
-        //    System.IO.File.WriteAllText(@"D:\Tarjetas\EscribeTexto.txt", jsonString);
-        //    return Ok("crack fiera idolo");
-        //}
-
-        // PUT api/<Stock>/5
-
-        [HttpPost(Name ="PostStock"), Authorize]
-        public ActionResult POST([FromBody]Stock_sub s)
+        //   POST: api/Stock
+        [HttpPost(Name = "PostStock"), Authorize]
+        public ActionResult POST([FromBody] Stock_sub s)
         {
+            dbDatos datos = new dbDatos();
 
-            //if (jsonString != null)
+            // Validar el modelo recibido
+            if (!ModelState.IsValid)
+            {
+                datos.escribirLog("Modelo invalido");
+                return BadRequest(ModelState);
+
+            }
+            try
+            {
+                //datos.escribirLog(s.fecha);
+                datos.Agregar_registro(s.fecha, s.suc, s.id_prod, s.kilos);
+            }
+            catch (Exception e)
+            {
+                datos.escribirLog(e.Message);
+                return BadRequest("Algo paso");
+            }
+
+            return Ok(datos.Id);
+
+            //if (datos.Id > 0)
             //{
-            //    char ch = '}';
-            //    int t_prods = jsonString.Count(f => (f == ch));
-
-            //    for (int i = 0; i < t_prods; i++)
-            //    {
-            //        string k = jsonString.Substring(jsonString.IndexOf("{"), jsonString.IndexOf("}") - jsonString.IndexOf("{") + 1);
-            //        dbDatos.datamodel m = JsonConvert.DeserializeObject<dbDatos.datamodel>(k);
-            //        jsonString = jsonString.Substring(jsonString.IndexOf("{") + 1);
-            //        if (jsonString.IndexOf("{") > 0)
-            //        { jsonString = jsonString.Substring(jsonString.IndexOf("{")); }
-
-            //        dbDatos datos = new dbDatos();
-
-            //        datos.Agregar_registro(m.fecha, m.suc, m.id_prod, m.kilos);
-            //    }
-            dbDatos datos = new dbDatos();
-            datos.Agregar_registro(s.fecha, s.suc, s.id_prod, s.kilos);
-            return Ok(s._id);
+            //    return Ok(datos.Id);
             //}
-            //else { return BadRequest(); }
+            //else
+            //{
+
+            //    datos.escribirLog("Algo paso aca");
+            //    return BadRequest("Algo paso");
+            //}
+
         }
-        //// DELETE api/<Stock>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+
     }
 }

@@ -59,7 +59,7 @@ namespace Planilla_WebApi.Controllers
         [HttpPost(Name = "PostBuzones"), Authorize]
         public ActionResult POST([FromBody] Buzones s)
         {
-
+            return Ok(0);
             //if (jsonString != null)
             //{
             //    char ch = '}';
@@ -77,16 +77,16 @@ namespace Planilla_WebApi.Controllers
 
             //        datos.Agregar_registro(m.fecha, m.suc, m.id_prod, m.kilos);
             //    }
-            dbDatos datos = new dbDatos();
-            int d = 0;
-            if (s.ID == 0)
-            {
-               d = datos.Agregar_Buzones(s.Fecha, s.Importe, s.Sucursal);
-            } 
-            else {
-               datos.Eliminar_Buzones(s.Fecha, s.Sucursal ,s.ID);
-            }
-            return Ok(d);
+            //dbDatos datos = new dbDatos();
+            //int d = 0;
+            //if (s.ID == 0)
+            //{
+            //   d = datos.Agregar_Buzones(s.Fecha, s.Importe, s.Sucursal);
+            //} 
+            //else {
+            //   datos.Eliminar_Buzones(s.Fecha, s.Sucursal ,s.ID);
+            //}
+            //return Ok(d);
             //}
             //else { return BadRequest(); }
         }

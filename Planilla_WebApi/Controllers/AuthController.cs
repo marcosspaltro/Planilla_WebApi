@@ -29,18 +29,7 @@ namespace Planilla_WebApi.Controllers
             return Ok(userName);
         }
 
-        //[HttpPost("register")]
-        //public async Task<ActionResult<User>> Register(UserDto request)
-        //{
-        //    CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-        //    user.Username = request.Username;
-        //    user.PasswordHash = passwordHash;
-        //    user.PasswordSalt = passwordSalt;
-
-        //    return Ok(user);
-        //}
-
+      
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
@@ -58,12 +47,12 @@ namespace Planilla_WebApi.Controllers
             {
                 return BadRequest("Error en el usuario o contraseña");
             }
-            string a = CreateToken(user);
-            string b = user.suc.ToString();
-            string [] token = { a, b , user.Username};
-
             var refreshToken = GenerateRefreshToken();
             SetRefreshToken(refreshToken);
+            
+            string a = CreateToken(user);            
+            string [] token = { a, user.Username, user.Sucursal.ToString(), user.NombreSucursal, user.Nivel.ToString(), user.Semana.ToString()};
+
 
             return Ok(token);
         }

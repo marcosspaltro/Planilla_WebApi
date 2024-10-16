@@ -1,6 +1,5 @@
 global using Planilla_WebApi.Services.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
@@ -16,7 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSwaggerGen(options => {
+builder.Services.AddSwaggerGen(options =>
+{
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Description = "Standard Authorization header using the Bearer scheme (\"bearer {token}\")",
@@ -27,6 +27,7 @@ builder.Services.AddSwaggerGen(options => {
 
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -55,7 +56,7 @@ app.UseCors(builder =>
 {
     builder
     //.WithOrigins("https://localhost", "https://192.168.1.3", "https://192.168.1.1", "https://192.168.1.11", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")    
-    .WithOrigins("*")    
+    .WithOrigins("*")
     .AllowAnyMethod()
     .AllowAnyHeader();
 });
