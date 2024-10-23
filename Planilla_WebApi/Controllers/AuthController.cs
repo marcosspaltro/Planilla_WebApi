@@ -33,7 +33,7 @@ namespace Planilla_WebApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            dbDatos db = new dbDatos();
+            dbStock db = new dbStock();
             IList<User> usuaros = db.Usuarios();
 
             user = usuaros.First(x => x.Username == request.Username);
@@ -83,7 +83,7 @@ namespace Planilla_WebApi.Controllers
             var refreshToken = new RefreshToken
             {
                 Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.Now.AddDays(3),
                 Created = DateTime.Now
             };
 

@@ -32,7 +32,7 @@ namespace Planilla_WebApi.Controllers
         [HttpGet(Name = "GetCant_prods"), Authorize]
         public int Get()
         {
-            dbDatos datos = new dbDatos();
+            dbStock datos = new dbStock();
             return datos.cant_prods();
         }
 

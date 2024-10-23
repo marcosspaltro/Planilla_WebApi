@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Planilla_WebApi.Controllers
 {
@@ -25,7 +24,7 @@ namespace Planilla_WebApi.Controllers
         [HttpGet(Name = "GetStock"), Authorize]
         public IList<Stock> Get(int suc, int tipo = 0, string semana = "1/1/2000")
         {
-            dbDatos datos = new dbDatos();
+            dbStock datos = new dbStock();
             return datos.Stocks(suc, tipo, semana);
         }
 
@@ -34,7 +33,7 @@ namespace Planilla_WebApi.Controllers
         [HttpPost(Name = "PostStock"), Authorize]
         public ActionResult POST([FromBody] Stock_sub s)
         {
-            dbDatos datos = new dbDatos();
+            dbStock datos = new dbStock();
 
             // Validar el modelo recibido
             if (!ModelState.IsValid)
@@ -45,29 +44,27 @@ namespace Planilla_WebApi.Controllers
             }
             try
             {
-                //datos.escribirLog(s.fecha);
                 datos.Agregar_registro(s.fecha, s.suc, s.id_prod, s.kilos);
             }
             catch (Exception e)
             {
-                datos.escribirLog(e.Message);
                 return BadRequest("Algo paso");
             }
 
-            return Ok(datos.Id);
 
-            //if (datos.Id > 0)
-            //{
-            //    return Ok(datos.Id);
-            //}
-            //else
-            //{
+            if (datos.Id > 0)
+            {
+                return Ok(datos.Id);
+            }
+            else
+            {
 
-            //    datos.escribirLog("Algo paso aca");
-            //    return BadRequest("Algo paso");
-            //}
+                return BadRequest("Algo paso");
+            }
 
         }
+
+        
 
     }
 }

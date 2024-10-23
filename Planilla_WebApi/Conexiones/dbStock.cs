@@ -5,28 +5,15 @@ using System.Security.Cryptography;
 
 namespace Planilla_WebApi.Conexiones
 {
-    public class dbDatos
+    public class dbStock
     {
         SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
 
 
-        public class datamodel
-        {
-            public DateTime fecha { get; set; }
-            public int suc { get; set; }
-            public int id_prod { get; set; }
-            public string desc { get; set; }
-            public double costo { get; set; }
-            public double kilos { get; set; }
-        }
-
         public int Id;
 
-        //public int Sucursal { get; set; }
-        //public string? Nombre { get; set; }
-        //public DateTime Fecha { get; set; }
 
-        public dbDatos()
+        public dbStock()
         {
 
         }
@@ -72,7 +59,6 @@ namespace Planilla_WebApi.Conexiones
                 {
                     _Stocks.Add(new()
                     {
-                        //ID = Convert.ToInt32(dr["ID_Stock"]),
                         Fecha = Convert.ToDateTime(dr["Fecha"].ToString()),
                         Sucursal = Convert.ToInt32(dr["ID_Sucursales"]),
                         Producto = Convert.ToInt32(dr["ID"]),
@@ -248,17 +234,20 @@ namespace Planilla_WebApi.Conexiones
 
         public void Agregar_registro(string fechaStock, int suc, int Id_prod, double Kilos)
         {
-            
+
+            // Chequear que la fecha no sea de la semana anterior
+            DateTime nfecha = DateTime.Parse(fechaStock);
+
+            nfecha = AjustarFechaSiEsDeSemanaAnterior(nfecha);
             try
             {
-                DateTime nfecha = DateTime.Parse(fechaStock);
                 int viejoID = Max_ID("Stock");
-                                
+
                 string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
                                         $"VALUES('{nfecha:MM/dd/yyy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{nfecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
                                         $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
-                                                
+
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
@@ -284,7 +273,7 @@ namespace Planilla_WebApi.Conexiones
 
             try
             {
-                DateTime nfecha = DateTime.Parse(fechaStock);
+
                 SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = '{nfecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
                     $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = '{nfecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
                 command.CommandType = CommandType.Text;
@@ -300,6 +289,28 @@ namespace Planilla_WebApi.Conexiones
                 escribirLog(e.Message);
             }
 
+        }
+
+        public DateTime AjustarFechaSiEsDeSemanaAnterior(DateTime fecha)
+        {
+            // Obtener el día actual de la semana (0 = domingo, 1 = lunes, ..., 6 = sábado)
+            DayOfWeek diaActualSemana = DateTime.Now.DayOfWeek;
+
+            // Obtener el lunes de la semana actual
+            DateTime lunesDeEstaSemana = DateTime.Now.AddDays(-(int)diaActualSemana + (diaActualSemana == DayOfWeek.Sunday ? -6 : 1));
+
+            // Obtener el lunes de la semana anterior
+            DateTime lunesDeSemanaAnterior = lunesDeEstaSemana.AddDays(-7);
+
+            // Verificar si la fecha dada está entre el lunes y el domingo de la semana anterior
+            if (fecha >= lunesDeSemanaAnterior && fecha < lunesDeEstaSemana)
+            {
+                // Si la fecha pertenece a la semana anterior, devolver el lunes de la semana actual
+                return lunesDeEstaSemana;
+            }
+
+            // Si la fecha no es de la semana anterior, devolver la fecha original
+            return fecha;
         }
 
         public void escribirLog(string e)
