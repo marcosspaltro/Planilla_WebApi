@@ -33,10 +33,10 @@ namespace Planilla_WebApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            dbStock db = new dbStock();
+            dbUsuarios db = new dbUsuarios();
             IList<User> usuaros = db.Usuarios();
 
-            user = usuaros.First(x => x.Username == request.Username);
+            user = usuaros.First(x => x.Username.ToLower() == request.Username.ToLower());
 
             if (user == null)
             {
@@ -62,11 +62,12 @@ namespace Planilla_WebApi.Controllers
         {
             var refreshToken = Request.Cookies["refreshToken"];
 
-            if (!user.RefreshToken.Equals(refreshToken))
-            {
-                return Unauthorized("Invalid Refresh Token.");
-            }
-            else if (user.TokenExpires < DateTime.Now)
+            //if (!user.RefreshToken.Equals(refreshToken))
+            //{
+            //    return Unauthorized("Invalid Refresh Token.");
+            //}
+            //else
+            if (user.TokenExpires < DateTime.Now)
             {
                 return Unauthorized("Token expired.");
             }

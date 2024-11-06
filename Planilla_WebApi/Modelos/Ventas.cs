@@ -12,8 +12,7 @@ namespace Planilla_WebApi.Modelos
         public int ID_Camion { get; set; }        
         public int Id_Proveedores { get; set; }        
         public string Nombre_Proveedor { get; set; }
-        public int Id_Sucursales { get; set; }
-        //public string nSucursal { get; set; }
+        public int Id_Sucursales { get; set; }        
         public int Id_Productos { get; set; }
         public string? Descripcion { get; set; }
         public double Kilos { get; set; }

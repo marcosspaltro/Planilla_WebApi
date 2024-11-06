@@ -43,7 +43,8 @@ namespace Planilla_WebApi.Controllers
         {
             var Ventas = await _context.vw_Ventas
                 .Where(o => o.Fecha >= fechaD && o.Fecha <= fechaH && o.Id_Sucursales == suc)
-                .OrderBy(o => o.Id)
+                .OrderBy(o => o.Fecha)
+                .ThenBy(o => o.Id)
                 .ToListAsync();
 
             if (Ventas == null || Ventas.Count == 0)
