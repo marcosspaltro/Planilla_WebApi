@@ -14,11 +14,11 @@ namespace Planilla_WebApi.Controllers
 
 
         //   GET: api/<Ofertas>
-        [HttpGet(Name = "GetOfertas"), Authorize]
-        public IList<Modelos.Ofertas> Get(int suc, int tipo = 0, string semana = "1/1/2000")
+        [HttpGet(Name = "GetOfertas")]
+        public IList<Modelos.Ofertas> Get(int suc, DateTime fecha)
         {
             Conexiones.dbOfertas datos = new Conexiones.dbOfertas();
-            return datos.Ofertas(suc, tipo, semana);
+            return datos.Ofertas(suc, fecha);
         }
 
 
@@ -37,7 +37,7 @@ namespace Planilla_WebApi.Controllers
             }
             try
             {
-                datos.Agregar_registro(s.fecha.ToString(), s.id_sucursal, s.id_productos, s.kilos);
+                //datos.Agregar_registro(s.id_sucursal, s.id_productos, s.kilos);
             }
             catch (Exception e)
             {

@@ -19,19 +19,17 @@ namespace Planilla_WebApi.Conexiones
         {
             DateTime f = DateTime.Today;
             int rd = (int)f.DayOfWeek;
-                       
+
             f = f.AddDays(-rd);
 
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
                 $", ISNULL((SELECT TOP 1 Kilos FROM Stock WHERE Id_Sucursales={f_suc} AND Fecha='{f:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
                 $"AS Kilos" +
-                $", {f_suc} AS ID_Sucursales, CONVERT(DATETIME, '{f:MM/dd/yyyy}') AS Fecha" +                
+                $", {f_suc} AS ID_Sucursales, CONVERT(DATETIME, '{f:MM/dd/yyyy}') AS Fecha" +
                 $", Id_Tipo" +
                 $" FROM Productos WHERE Ver = 1 ORDER BY Id_Tipo, Id", sql);
 
-            //$", ISNULL((SELECT TOP 1 ID FROM Stock WHERE Id_Sucursales={f_suc} AND Fecha='{f:MM/dd/yyyy}' AND Id_Productos=Productos.Id), 0) " +
-            //    $"AS ID_Stock" +
             cmd.CommandType = CommandType.Text;
 
             List<Stock> _Stocks = new();
