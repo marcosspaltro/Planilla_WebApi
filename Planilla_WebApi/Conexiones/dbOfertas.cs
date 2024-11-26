@@ -1,4 +1,5 @@
-﻿using Planilla_WebApi.Modelos;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Planilla_WebApi.Modelos;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -19,11 +20,28 @@ namespace Planilla_WebApi.Conexiones
         {
 
             sql.Open();
-            SqlCommand cmd = new SqlCommand($"SELECT p.* " +
-                $", ISNULL((SELECT SUM(o.Kilos) FROM Ofertas o WHERE o.Fecha='{fecha:MM/dd/yyy}' AND o.id_Sucursales={f_suc} AND o.Id_Productos=p.Id_Productos), 0) AS Kilos" +
-                $" FROM vw_Precios_OfertasSucursales p WHERE P.Fecha<='{fecha:MM/dd/yyy}' AND p.id_Sucursales={f_suc}" +
-                $" AND p.Fecha= (SELECT MAX(Fecha) FROM vw_Precios_OfertasSucursales n WHERE n.Fecha<='{fecha:MM/dd/yyy}' AND n.Id_Sucursales={f_suc})" +
-                $" ORDER BY Orden", sql);
+            string cadena = $"SELECT p.ID_Productos" +
+                            $", LEFT(Descripcion, CHARINDEX('::', Descripcion) - 1) AS Nombre" +
+                            $", ISNULL(SUBSTRING(Descripcion, CHARINDEX('::', Descripcion) + 2, LEN(Descripcion)), 'x kg') AS Oferta" +
+                            $", Kilos" +
+                            $" FROM vw_Ofertas p " +
+                            $" WHERE P.Fecha='{fecha:MM/dd/yyy}' AND p.id_Sucursales={f_suc}";
+
+            string nFecha = $"'{fecha:MM/dd/yyy}'";
+            if (fecha == DateTime.MinValue)
+            {
+                // No se proporcionó fecha
+                nFecha = "(SELECT MAX(Semana) FROM Semanas)";
+            }
+            
+            cadena = $"SELECT PO.Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
+                $", PO.Oferta, PO.Precio" +
+                $", ISNULL((SELECT SUM(ISNULL(o.Kilos, 0)) FROM Ofertas o WHERE o.Fecha={nFecha} AND o.ID_Productos=PO.Id_Productos AND o.ID_Sucursales=PO.Id_Sucursales), 0) Kilos " +
+                $" FROM Precios_OfertasSucursales PO" +
+                $" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
+                $" ORDER BY PO.Id_Productos";
+
+            SqlCommand cmd = new SqlCommand(cadena, sql);
             cmd.CommandType = CommandType.Text;
 
             List<Ofertas> _Ofertas = new();
@@ -64,7 +82,13 @@ namespace Planilla_WebApi.Conexiones
             {
                 int viejoID = Max_ID("Ofertas");
 
-                string cmdText = $"INSERT INTO Ofertas (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
+                // Variable para generar la descripcion con la oferta
+                string descripcion = "";
+
+                Productos pr = new Productos();
+
+
+                string cmdText = $"INSERT INTO Ofertas (Fecha, ID_Sucursales, ID_Productos, Descripcion, Costo_Original, Costo_Oferta, Kilos) " +
                                         $"VALUES('{fecha:MM/dd/yyy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{fecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
                                         $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";

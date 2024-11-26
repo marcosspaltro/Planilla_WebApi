@@ -8,7 +8,6 @@ namespace Planilla_WebApi.Modelos
         
         public int id_prod { get; set; }
 
-        public string fecha { get; set; }
         public float kilos { get; set; }
         public int suc { get; set; }
 

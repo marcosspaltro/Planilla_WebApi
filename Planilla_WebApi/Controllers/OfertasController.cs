@@ -15,10 +15,11 @@ namespace Planilla_WebApi.Controllers
 
         //   GET: api/<Ofertas>
         [HttpGet(Name = "GetOfertas")]
-        public IList<Modelos.Ofertas> Get(int suc, DateTime fecha)
+        public IList<Modelos.Ofertas> Get(int sucursal, DateTime fecha = default)
         {
             Conexiones.dbOfertas datos = new Conexiones.dbOfertas();
-            return datos.Ofertas(suc, fecha);
+                        
+            return datos.Ofertas(sucursal, fecha);
         }
 
 

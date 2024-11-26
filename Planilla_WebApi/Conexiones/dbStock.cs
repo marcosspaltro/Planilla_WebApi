@@ -63,28 +63,20 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
-        public void Agregar_registro(string fechaStock, int suc, int Id_prod, double Kilos)
+        public void Agregar_registro(int suc, int Id_prod, double Kilos)
         {
+            string nfecha = "DATEADD(DAY, -1, (SELECT MAX(Semana) FROM Semanas))";
 
-
-            // Obtener el día actual de la semana (0 = domingo, 1 = lunes, ..., 6 = sábado)
-            DayOfWeek diaActualSemana = DateTime.Now.DayOfWeek;
-
-            // No tomamos la fecha que manden porque puede venir una fecha anterior por no cerrar sesion
-            DateTime nfecha = DateTime.Today;
-
-            // Si es lunes o martes se va a agregar con la fecha del domingo
-            nfecha.AddDays(((int)diaActualSemana) * -2);
-
-            if (diaActualSemana < DayOfWeek.Wednesday)
+            if (DateTime.Today.DayOfWeek < DayOfWeek.Wednesday || suc == 6005)
             {
                 try
                 {
                     int viejoID = Max_ID("Stock");
 
                     string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
-                                            $"VALUES('{nfecha:MM/dd/yyy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
-                                            $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{nfecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
+                                            $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                                            $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
+                                            $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
                                             $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
 
                     SqlCommand command = new SqlCommand(cmdText, sql);
@@ -117,8 +109,8 @@ namespace Planilla_WebApi.Conexiones
                 try
                 {
 
-                    SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = '{nfecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
-                        $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = '{nfecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                    SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} AND id <> " +
+                        $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
                     command.CommandType = CommandType.Text;
                     command.Connection = sql;
                     sql.Open();
