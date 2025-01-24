@@ -18,7 +18,7 @@ namespace Planilla_WebApi.Conexiones
         public IList<Telefonos>? Telefonos(int f_suc)
         {
             sql.Open();
-            SqlCommand cmd = new SqlCommand($"SELECT Top 1 Cuit, Nombre, Telefono, Enlace, N_cliente FROM vw_servicio_internet WHERE id = {f_suc}", sql);
+            SqlCommand cmd = new SqlCommand($"SELECT * FROM vw_servicio_internet WHERE id = {f_suc} OR (Id = 0 AND ISNULL(Nombre,  '') != '') ORDER BY Id, Nombre", sql);
 
             cmd.CommandType = CommandType.Text;
 
