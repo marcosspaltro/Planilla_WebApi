@@ -16,20 +16,9 @@ namespace Planilla_WebApi.Conexiones
 
         }
         #region " Ofertas "
-        public IList<Ofertas>? Ofertas(int f_suc, int dia)
+        public IList<Ofertas>? Ofertas(int f_suc, DateTime dia)
         {
-
-            DateTime fecha = DateTime.Now;
-            DateTime lunes = fecha.AddDays(-(int)fecha.DayOfWeek + 1);
-
-            // Si DayOfWeek es domingo (0), necesitamos restar 6 días adicionales
-            if (fecha.DayOfWeek == DayOfWeek.Sunday)
-            {
-                lunes = fecha.AddDays(-6);
-            }
-
-            fecha.AddDays(dia - 1);
-
+            
             sql.Open();
 
             string cadena = $"SELECT p.ID_Productos" +
@@ -37,34 +26,35 @@ namespace Planilla_WebApi.Conexiones
                             $", ISNULL(SUBSTRING(Descripcion, CHARINDEX('::', Descripcion) + 2, LEN(Descripcion)), 'x kg') AS Oferta" +
                             $", Kilos" +
                             $" FROM vw_Ofertas p " +
-                            $" WHERE P.Fecha='{fecha:MM/dd/yyy}' AND p.id_Sucursales={f_suc}";
+                            $" WHERE P.Fecha='{dia:MM/dd/yyy}' AND p.id_Sucursales={f_suc}";
 
             
-            string nFecha = $"'{fecha:MM/dd/yyy}'";
-            if (fecha == DateTime.MinValue)
+            string nFecha = $"'{dia:MM/dd/yyy}'";
+            if (dia == DateTime.MinValue)
             {
                 // No se proporcionó fecha
                 nFecha = "(SELECT MAX(Semana) FROM Semanas)";
             }
 
-            cadena = $"SELECT PO.Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
-                $", PO.Oferta, PO.Precio" +
-                $", ISNULL((SELECT SUM(ISNULL(o.Kilos, 0)) FROM Ofertas o WHERE o.Fecha={nFecha} AND o.ID_Productos=PO.Id_Productos AND o.ID_Sucursales=PO.Id_Sucursales), 0) Kilos " +
-                $" FROM Precios_OfertasSucursales PO" +
-                $" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
+            cadena = $"SELECT '{dia:dd/MM/yyy}' Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
+                $", PO.Descripcion Oferta, PO.Costo Precio " +
+                $", ISNULL((SELECT SUM(ISNULL(o.Kilos, 0)) FROM Ofertas o WHERE o.Fecha={nFecha} AND o.ID_Productos=PO.Id_Productos AND o.ID_Sucursales={f_suc}), 0) Kilos " +
+                $" FROM Precios_Ofertas PO" +
                 $" ORDER BY PO.Id_Productos";
 
-            if (f_suc == 6005)
-            {
-                cadena = $"SELECT PO.Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
-                $", PO.Oferta, PO.Precio" +
-                $", (ROUND(RAND(), 2) * id_Productos) AS Kilos " +
-                $" FROM Precios_OfertasSucursales PO" +
-                $" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
-                $" ORDER BY PO.Id_Productos";
-                
-            }
-            
+            //$" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
+
+            //if (f_suc == 6005)
+            //{
+            //    cadena = $"SELECT PO.Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
+            //    $", PO.Oferta, PO.Precio" +
+            //    $", (ROUND(RAND(), 2) * id_Productos) AS Kilos " +
+            //    $" FROM Precios_OfertasSucursales PO" +
+            //    $" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
+            //    $" ORDER BY PO.Id_Productos";
+
+            //}
+
 
             SqlCommand cmd = new SqlCommand(cadena, sql);
             cmd.CommandType = CommandType.Text;

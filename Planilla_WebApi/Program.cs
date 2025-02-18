@@ -10,6 +10,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -51,6 +62,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,14 +73,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(builder =>
-{
-    builder
-    //.WithOrigins("https://localhost", "https://192.168.1.3", "https://192.168.1.1", "https://192.168.1.11", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")    
-    .WithOrigins("*")
-    .AllowAnyMethod()
-    .AllowAnyHeader();
-});
+//app.UseCors(builder =>
+//{
+//    builder
+//    //.WithOrigins("https://localhost", "https://192.168.1.3", "https://192.168.1.1", "https://192.168.1.11", "https://lacosteleta.com.ar", "http://lacosteleta.com.ar")    
+//    .WithOrigins("*")
+//    .AllowAnyMethod()
+//    .AllowAnyHeader();
+//});
 
 
 app.UseAuthentication();
