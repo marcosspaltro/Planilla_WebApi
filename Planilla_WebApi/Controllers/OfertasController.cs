@@ -38,7 +38,7 @@ namespace Planilla_WebApi.Controllers
             }
             try
             {
-                datos.Agregar_registro(s.id_sucursal, s.id_productos, s.kilos, s.fecha);
+                datos.Agregar_registro(s.id_sucursal, s.id_productos, s.oferta, s.kilos, s.fecha);
             }
             catch (Exception e)
             {

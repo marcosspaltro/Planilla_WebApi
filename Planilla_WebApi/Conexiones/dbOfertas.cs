@@ -90,7 +90,7 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
-        public void Agregar_registro(int suc, int Id_prod, double Kilos, DateTime fecha)
+        public void Agregar_registro(int suc, int Id_prod, string oferta, double Kilos, DateTime fecha)
         {
 
             try
@@ -101,7 +101,7 @@ namespace Planilla_WebApi.Conexiones
 
 
                 string cmdText = $"INSERT INTO Ofertas (Fecha, ID_Sucursales, ID_Productos, Descripcion, Costo_Original, Costo_Oferta, Kilos) " +
-                                        $"VALUES('{fecha:MM/dd/yyy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                                        $"VALUES('{fecha:MM/dd/yyy}', {suc}, {Id_prod}, CONCAT((SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), ':: {oferta}') , " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{fecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
                                         $", 0.0, {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
 
@@ -131,7 +131,7 @@ namespace Planilla_WebApi.Conexiones
             try
             {
 
-                SqlCommand command = new SqlCommand($"DELETE FROM Ofertas WHERE Id_Sucursales = {suc} AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
+                SqlCommand command = new SqlCommand($"DELETE FROM Ofertas WHERE Id_Sucursales = {suc} AND Descripcion like '%{oferta}%' AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
                     $" (SELECT TOP 1 id FROM Ofertas WHERE Id_Sucursales = {suc} AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
