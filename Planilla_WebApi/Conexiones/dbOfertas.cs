@@ -20,15 +20,7 @@ namespace Planilla_WebApi.Conexiones
         {
             
             sql.Open();
-
-            string cadena = $"SELECT p.ID_Productos" +
-                            $", LEFT(Descripcion, CHARINDEX('::', Descripcion) - 1) AS Nombre" +
-                            $", ISNULL(SUBSTRING(Descripcion, CHARINDEX('::', Descripcion) + 2, LEN(Descripcion)), 'x kg') AS Oferta" +
-                            $", Kilos" +
-                            $" FROM vw_Ofertas p " +
-                            $" WHERE P.Fecha='{dia:MM/dd/yyy}' AND p.id_Sucursales={f_suc}";
-
-            
+  
             string nFecha = $"'{dia:MM/dd/yyy}'";
             if (dia == DateTime.MinValue)
             {
@@ -36,25 +28,18 @@ namespace Planilla_WebApi.Conexiones
                 nFecha = "(SELECT MAX(Semana) FROM Semanas)";
             }
 
-            cadena = $"SELECT '{dia:dd/MM/yyy}' Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
-                $", PO.Descripcion Oferta, PO.Costo Precio " +
-                $", ISNULL((SELECT SUM(ISNULL(o.Kilos, 0)) FROM Ofertas o WHERE o.Fecha={nFecha} AND o.ID_Productos=PO.Id_Productos AND o.ID_Sucursales={f_suc}), 0) Kilos " +
+            string cadena = $"SELECT '{dia:dd/MM/yyy}' Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
+                $", CASE PO.Descripcion " +
+                $" WHEN '' THEN ' x Kg' " +
+                $" WHEN NULL THEN ' x Kg'" +
+                $" ELSE PO.Descripcion" +
+                $" END " +
+                $" AS Oferta" +
+                $", PO.Costo Precio " +
+                $", ISNULL((SELECT SUM(ISNULL(o.Kilos, 0)) FROM Ofertas o WHERE o.Fecha={nFecha} AND o.ID_Productos=PO.Id_Productos AND o.Descripcion LIKE '%' + PO.Descripcion AND o.ID_Sucursales={f_suc}), 0) Kilos " +
                 $" FROM Precios_Ofertas PO" +
                 $" ORDER BY PO.Id_Productos";
-
-            //$" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
-
-            //if (f_suc == 6005)
-            //{
-            //    cadena = $"SELECT PO.Fecha, PO.Id_Productos, (SELECT pr.Nombre FROM Productos pr WHERE pr.Id=PO.Id_Productos) Nombre" +
-            //    $", PO.Oferta, PO.Precio" +
-            //    $", (ROUND(RAND(), 2) * id_Productos) AS Kilos " +
-            //    $" FROM Precios_OfertasSucursales PO" +
-            //    $" WHERE PO.Fecha=(SELECT MAX(p.Fecha) FROM Precios_OfertasSucursales p WHERE p.Id_Sucursales={f_suc} AND p.Fecha<={nFecha}) AND PO.Id_Sucursales={f_suc}" +
-            //    $" ORDER BY PO.Id_Productos";
-
-            //}
-
+          
 
             SqlCommand cmd = new SqlCommand(cadena, sql);
             cmd.CommandType = CommandType.Text;
