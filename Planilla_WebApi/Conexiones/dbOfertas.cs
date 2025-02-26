@@ -88,8 +88,11 @@ namespace Planilla_WebApi.Conexiones
                 string cmdText = $"INSERT INTO Ofertas (Fecha, ID_Sucursales, ID_Productos, Descripcion, Costo_Original, Costo_Oferta, Kilos) " +
                                         $"VALUES('{fecha:MM/dd/yyy}', {suc}, {Id_prod}, CONCAT((SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), ' :: {oferta}') , " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{fecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
-                                        $", 0.0" +
+                                        $", isnull((SELECT TOP 1 ISNULL(po.Costo, 0) FROM Precios_Ofertas po WHERE po.Id_Productos={Id_prod} AND po.Descripcion LIKE '%{oferta}'), 0)" +
                                         $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+
+                // Para agregar el precio de la oferta
+                //isnull((SELECT TOP 1 ISNULL(po.Costo, 0) FROM Precios_Ofertas po WHERE po.Id_Productos={Id_prod} AND po.Descripcion='{oferta}'), 0)                
 
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;

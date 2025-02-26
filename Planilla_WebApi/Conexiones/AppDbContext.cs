@@ -9,6 +9,7 @@ namespace Planilla_WebApi.Conexiones
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Ventas> vw_Ventas { get; set; }
+        public DbSet<VentasTipo> vw_VentasTipo { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
     }
 

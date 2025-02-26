@@ -67,67 +67,60 @@ namespace Planilla_WebApi.Conexiones
         {
             string nfecha = "DATEADD(DAY, -1, (SELECT MAX(Semana) FROM Semanas))";
 
-            if (DateTime.Today.DayOfWeek < DayOfWeek.Wednesday || suc == 6005)
+
+            try
             {
-                try
+                int viejoID = Max_ID("Stock");
+
+                string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
+                                        $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
+                                        $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
+                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+
+                SqlCommand command = new SqlCommand(cmdText, sql);
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+
+                Id = Max_ID("Stock");
+
+                // Si es igual es que no se agrego
+                if (viejoID == Id)
                 {
-                    int viejoID = Max_ID("Stock");
-
-                    string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
-                                            $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
-                                            $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                            $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
-                                            $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
-
-                    SqlCommand command = new SqlCommand(cmdText, sql);
-                    command.CommandType = CommandType.Text;
-                    command.Connection = sql;
-                    sql.Open();
-
-                    var d = command.ExecuteNonQuery();
-
-                    sql.Close();
-
-                    Id = Max_ID("Stock");
-
-                    // Si es igual es que no se agrego
-                    if (viejoID == Id)
-                    {
-                        escribirLog("no se agrego");
-                        Id = 0;
-                    }
-                    else
-                    {
-                        escribirLog($"Suc: {suc}, Prod: {Id_prod}, Kilos: {Kilos:N2}");
-                    }
+                    escribirLog("no se agrego");
+                    Id = 0;
                 }
-                catch (Exception e)
+                else
                 {
-                    escribirLog(e.Message);
-                }
-
-                try
-                {
-
-                    SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} AND id <> " +
-                        $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
-                    command.CommandType = CommandType.Text;
-                    command.Connection = sql;
-                    sql.Open();
-
-                    var d = command.ExecuteNonQuery();
-
-                    sql.Close();
-                }
-                catch (Exception e)
-                {
-                    escribirLog(e.Message);
+                    escribirLog($"Suc: {suc}, Prod: {Id_prod}, Kilos: {Kilos:N2}");
                 }
             }
-            else
+            catch (Exception e)
             {
-                string s = DateTime.Today.ToString("dddd");
-                escribirLog($"Estan ingresando un dato hoy {s}. Suc: {suc}, Prod: {Id_prod}, Kilos: {Kilos:N2}");
+                escribirLog(e.Message);
+            }
+
+            try
+            {
+
+                SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} AND id <> " +
+                    $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                command.CommandType = CommandType.Text;
+                command.Connection = sql;
+                sql.Open();
+
+                var d = command.ExecuteNonQuery();
+
+                sql.Close();
+            }
+            catch (Exception e)
+            {
+                escribirLog(e.Message);
             }
 
         }
