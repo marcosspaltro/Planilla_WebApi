@@ -18,6 +18,8 @@ namespace Planilla_WebApi.Modelos
         public float Kilos2 { get; set; }
         public float Kilos3 { get; set; }
         public int Tipo { get; set; } = 0;
+        public float Stock { get; set; }
+        public float Pedido { get; set; }
 
         public Pedidos()
         {
