@@ -55,22 +55,22 @@ namespace Planilla_WebApi.Controllers
         }
 
         // GET: api/Ventas/1/7
-        [HttpGet("{suc}/{tipo}"), Authorize]
+        [HttpGet("{suc}/{tipo}")]
         public async Task<ActionResult<IEnumerable<Ventas>>> GetVentasByFecha(int suc, int tipo)
         {
-            DateTime fecha = DateTime.Today;
+            DateTime fecha = new DateTime(2025, 2, 18);
+            //suc = 10;
+            fecha = DateTime.Today;
 
-            var Ventas = await _context.vw_Ventas
-                .Where(o => o.Fecha == fecha && o.Id_Sucursales == suc && o.Tipo == tipo)
-                .OrderBy(o => o.Id)
-                .ToListAsync();
+            dbVentas db = new dbVentas();
+            IList<Ventas> Ventas = db.Ventas(suc, fecha, tipo);
 
             if (Ventas == null || Ventas.Count == 0)
             {
                 return NotFound();
             }
 
-            return Ventas;
+            return Ok(Ventas);
         }
 
         // Suc / fecha / tipo
@@ -91,43 +91,51 @@ namespace Planilla_WebApi.Controllers
             return Ventas;
         }
 
-        // PUT: api/Ventas/2023-10-15/sucursal1/producto1
-        [HttpPut("{fecha}/{sucursal}/{producto}"), Authorize]
-        public async Task<IActionResult> UpdateVenta(DateTime fecha, int sucursal, int producto, [FromBody] Ventas updatedVenta)
-        {
-            var Venta = await _context.vw_Ventas
-                .FirstOrDefaultAsync(o => o.Fecha == fecha && o.Id_Sucursales == sucursal && o.Id_Productos == producto);
+        //// PUT: api/Ventas/2023-10-15/sucursal1/producto1
+        //[HttpPut("{fecha}/{sucursal}/{producto}"), Authorize]
+        //public async Task<IActionResult> UpdateVenta(DateTime fecha, int sucursal, int producto, [FromBody] Ventas updatedVenta)
+        //{
+        //    var Venta = await _context.vw_Ventas
+        //        .FirstOrDefaultAsync(o => o.Fecha == fecha && o.Id_Sucursales == sucursal && o.Id_Productos == producto);
 
-            if (Venta == null)
-            {
-                return NotFound();
-            }
+        //    if (Venta == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            // Actualizamos los valores
-            Venta.Kilos = updatedVenta.Kilos;
+        //    // Actualizamos los valores
+        //    Venta.Kilos = updatedVenta.Kilos;
 
-            _context.Entry(Venta).State = EntityState.Modified;
+        //    _context.Entry(Venta).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return StatusCode(500, "Error al actualizar la Venta.");
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        return StatusCode(500, "Error al actualizar la Venta.");
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/Ventas
         [HttpPost, Authorize]
         public async Task<ActionResult<Ventas>> CreateVenta([FromBody] Ventas nuevaVenta)
         {
             _context.vw_Ventas.Add(nuevaVenta);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetVentasByFecha), new { fecha = nuevaVenta.Fecha }, nuevaVenta);
+            try
+            {
+                dbVentas db = new dbVentas ();
+                db.Agregar(nuevaVenta);
+            }
+            catch (Exception er)
+            {
+                return StatusCode(500, er.Message);
+            }            
+            return Ok(nuevaVenta);
         }
 
         // DELETE: api/Ventas/2023-10-15/sucursal1/producto1
