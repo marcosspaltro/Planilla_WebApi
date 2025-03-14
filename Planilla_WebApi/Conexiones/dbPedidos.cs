@@ -66,20 +66,53 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
+        public IList<Pedidos>? Detalle_Pedidos(int f_suc, int Prod)
+        {
+            DateTime f = DateTime.Today;
+            int rd = (int)f.DayOfWeek;
+
+            f = f.AddDays(-rd + 1);
+
+            sql.Open();
+            SqlCommand cmd = new SqlCommand($"SELECT Id, Fecha, Kilos FROM Pedidos WHERE Fecha BETWEEN '{f.ToString("MM/dd/yyyy")}' AND '{f.AddDays(6).ToString("MM/dd/yyyy")}' AND Suc = {f_suc} AND Id_Producto = {Prod} ORDER BY Fecha, Id", sql);
+
+            cmd.CommandType = CommandType.Text;
+
+            List<Pedidos> _Pedidoss = new();
+            try
+            {
+                SqlDataReader dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    _Pedidoss.Add(new()
+                    {
+                        ID = Convert.ToInt32(dr["ID"]),
+                        Fecha = Convert.ToDateTime(dr["Fecha"].ToString()),
+                        Kilos = Convert.ToSingle(dr["Kilos"])
+                    });
+                }
+
+                dr.Close();
+                sql.Close();
+
+                return _Pedidoss;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                _Pedidoss = null;
+                return _Pedidoss;
+            }
+        }
+
         public void Agregar_registro(int suc, int Id_prod, double Kilos)
         {
-            string nfecha = "DATEADD(DAY, -1, (SELECT MAX(Semana) FROM Semanas))";
-
-
             try
             {
                 int viejoID = Max_ID("Pedidos");
 
-                string cmdText = $"INSERT INTO Pedidos (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
-                                        $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
-                                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                        $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
-                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+                string cmdText = $"INSERT INTO Pedidos (Fecha, Suc, Id_Producto, Kilos) VALUES ((SELECT CAST(GETDATE() AS DATE)), {suc}, {Id_prod}, {Kilos})";
 
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;
@@ -111,8 +144,8 @@ namespace Planilla_WebApi.Conexiones
             try
             {
 
-                SqlCommand command = new SqlCommand($"DELETE FROM Pedidos WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} AND id <> " +
-                    $" (SELECT TOP 1 id FROM Pedidos WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                SqlCommand command = new SqlCommand($"DELETE FROM Pedidos WHERE Suc = {suc} AND Fecha = (SELECT CAST(GETDATE() AS DATE)) AND Id_Producto = {Id_prod} AND id <> " +
+                    $" (SELECT TOP 1 id FROM Pedidos WHERE Suc = {suc} AND Fecha = (SELECT CAST(GETDATE() AS DATE)) AND Id_Producto = {Id_prod} ORDER BY Id DESC) ", sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
                 sql.Open();
