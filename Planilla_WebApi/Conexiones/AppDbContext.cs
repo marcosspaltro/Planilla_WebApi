@@ -11,6 +11,8 @@ namespace Planilla_WebApi.Conexiones
         public DbSet<Ventas> vw_Ventas { get; set; }
         public DbSet<VentasTipo> vw_VentasTipo { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
+        public DbSet<Sucursales> Sucursales { get; set; }
+
     }
 
 }
