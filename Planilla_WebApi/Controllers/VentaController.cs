@@ -90,35 +90,7 @@ namespace Planilla_WebApi.Controllers
 
             return Ventas;
         }
-
-        //// PUT: api/Ventas/2023-10-15/sucursal1/producto1
-        //[HttpPut("{fecha}/{sucursal}/{producto}"), Authorize]
-        //public async Task<IActionResult> UpdateVenta(DateTime fecha, int sucursal, int producto, [FromBody] Ventas updatedVenta)
-        //{
-        //    var Venta = await _context.vw_Ventas
-        //        .FirstOrDefaultAsync(o => o.Fecha == fecha && o.Id_Sucursales == sucursal && o.Id_Productos == producto);
-
-        //    if (Venta == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    // Actualizamos los valores
-        //    Venta.Kilos = updatedVenta.Kilos;
-
-        //    _context.Entry(Venta).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        return StatusCode(500, "Error al actualizar la Venta.");
-        //    }
-
-        //    return NoContent();
-        //}
+               
 
         // POST: api/Ventas
         [HttpPost, Authorize]
