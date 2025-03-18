@@ -1,6 +1,7 @@
 ﻿using Planilla_WebApi.Modelos;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing.Imaging;
 
 namespace Planilla_WebApi.Conexiones
 {
@@ -24,7 +25,7 @@ namespace Planilla_WebApi.Conexiones
 
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT *, ISNULL((SELECT TOP 1 Kilos FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1).ToString("MM/dd/yyyy")}' AND Id_Productos = Prod),0) AS Stock," +
-                $" ISNULL((SELECT SUM(Kilos) FROM Pedidos WHERE fecha BETWEEN {f.ToString("MM/dd/yyyy")} AND '{f.AddDays(6).ToString("MM/dd/yyyy")}' AND Suc = {f_suc} AND id_Producto = Prod), 0) As Pedido" +
+                $" ISNULL((SELECT SUM(Kilos) FROM Pedidos WHERE fecha BETWEEN '{f.ToString("MM/dd/yyyy")}' AND '{f.AddDays(6).ToString("MM/dd/yyyy")}' AND Suc = {f_suc} AND id_Producto = Prod), 0) As Pedido" +
                 $" FROM (SELECT Prod, Nombre, CONVERT(varchar(10), FECHA, 103) AS Semana, ISNULL( Kilos, 0) AS tKilos  FROM vw_VentaProductos WHERE Suc={f_suc}) AS Venta  " +
                 $"PIVOT (SUM (tKilos) FOR Semana IN([{f.AddDays(-35).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-28).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-21).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-14).ToString("dd/MM/yyyy")}])) AS VENTAS   ORDER BY Prod", sql);
 
@@ -46,10 +47,10 @@ namespace Planilla_WebApi.Conexiones
                         Descripcion = dr["Nombre"].ToString(),
                         Stock = Convert.ToSingle(dr["Stock"]),
                         Pedido = Convert.ToSingle(dr["Pedido"]),
-                        Kilos = Convert.ToSingle(dr[f.AddDays(-14).ToString("dd/MM/yyyy")]),
-                        Kilos1 = Convert.ToSingle(dr[f.AddDays(-21).ToString("dd/MM/yyyy")]),
-                        Kilos2 = Convert.ToSingle(dr[f.AddDays(-28).ToString("dd/MM/yyyy")]),
-                        Kilos3 = Convert.ToSingle(dr[f.AddDays(-35).ToString("dd/MM/yyyy")])
+                        Kilos = dr.IsDBNull(5) ? 0 : Convert.ToSingle(dr[f.AddDays(-14).ToString("dd/MM/yyyy")]),
+                        Kilos1 = dr.IsDBNull(4) ? 0 : Convert.ToSingle(dr[f.AddDays(-21).ToString("dd/MM/yyyy")]),
+                        Kilos2 = dr.IsDBNull(3) ? 0 : Convert.ToSingle(dr[f.AddDays(-28).ToString("dd/MM/yyyy")]),
+                        Kilos3 = dr.IsDBNull(2) ? 0 : Convert.ToSingle(dr[f.AddDays(-35).ToString("dd/MM/yyyy")])
                     });
                 }
 
