@@ -11,14 +11,16 @@ namespace Planilla_WebApi.Controllers
     public class AnalisisController : Controller
     {
         dbAnalisis db = new dbAnalisis();
-
+                
         // hhtpget para obtener las sucursales
         [HttpGet]
-        public IList<Ventas> GetVentasAnuales()
+        public IList<Ventas> GetVentasAnuales(int tipo = 0)
         {
-            var ventas = db.VentaAnuales()?.ToList();
+            var ventas = db.VentaAnuales(tipo)?.ToList();
             // Retornar la lista de sucursales
             return ventas ?? new List<Ventas>();
         }
     }
+
+
 }

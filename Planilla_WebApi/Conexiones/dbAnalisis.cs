@@ -8,15 +8,23 @@ namespace Planilla_WebApi.Conexiones
     {
         
         SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
-
-        public IEnumerable<Ventas>? VentaAnuales()
+               
+        public IEnumerable<Ventas>? VentaAnuales(int tipo)
         {
             string cadena = $"SELECT YEAR(Fecha) AS Año, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
-                $"WHERE YEAR(Fecha) >= 2002 " +
+                $"WHERE YEAR(Fecha) >= 2002" +
                 $"GROUP BY YEAR(Fecha) " +
                 $"ORDER BY Año";
+            if (tipo > 0) {
+                cadena = $"SELECT YEAR(Fecha) AS Año, " +
+                $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
+                $"FROM vw_VentaProductos " +
+                $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo}" +
+                $"GROUP BY YEAR(Fecha) " +
+                $"ORDER BY Año";
+            }
             sql.Open();
             SqlCommand cmd = new SqlCommand(cadena, sql);
             cmd.CommandType = CommandType.Text;
@@ -43,5 +51,7 @@ namespace Planilla_WebApi.Conexiones
                 return _Ventas;
             }
         }
+
     }
 }
+
