@@ -26,8 +26,7 @@ namespace Planilla_WebApi.Conexiones
 
                 SqlCommand cmd = new SqlCommand(Cadena, sql);
                 cmd.CommandType = CommandType.Text;
-
-                sql.Open();
+                                
                 SqlDataAdapter daAdapt = new SqlDataAdapter(cmd);
                 Descripcion = cmd.ExecuteScalar().ToString();
 

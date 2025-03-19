@@ -6,24 +6,27 @@ namespace Planilla_WebApi.Conexiones
 {
     public class dbAnalisis
     {
-        
+
         SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
-               
-        public IEnumerable<Ventas>? VentaAnuales(int tipo)
+
+        public IEnumerable<Ventas>? VentaAnuales(int tipo, bool mostrarSuc)
         {
-            string cadena = $"SELECT YEAR(Fecha) AS Año, " +
+            string sSuc = mostrarSuc ? ", Suc" : "";
+
+            string cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
                 $"WHERE YEAR(Fecha) >= 2002" +
-                $"GROUP BY YEAR(Fecha) " +
-                $"ORDER BY Año";
-            if (tipo > 0) {
-                cadena = $"SELECT YEAR(Fecha) AS Año, " +
+                $"GROUP BY YEAR(Fecha){sSuc} " +
+                $"ORDER BY Año{sSuc}";
+            if (tipo > 0)
+            {
+                cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
                 $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo}" +
-                $"GROUP BY YEAR(Fecha) " +
-                $"ORDER BY Año";
+                $"GROUP BY YEAR(Fecha){sSuc} " +
+                $"ORDER BY Año{sSuc}";
             }
             sql.Open();
             SqlCommand cmd = new SqlCommand(cadena, sql);
@@ -34,11 +37,25 @@ namespace Planilla_WebApi.Conexiones
                 SqlDataReader dr = cmd.ExecuteReader();
                 while (dr.Read())
                 {
-                    _Ventas.Add(new()
+
+                    if (!mostrarSuc)
                     {
-                        Tipo = Convert.ToInt32(dr["Año"]),
-                        Kilos = Convert.ToSingle(dr["TotalKilos"])
-                    });
+                        _Ventas.Add(new()
+                        {
+                            Tipo = Convert.ToInt32(dr["Año"]),
+                            Kilos = Convert.ToSingle(dr["TotalKilos"])
+                        });
+                    }
+                    else
+                    {
+                        _Ventas.Add(new()
+                        {
+                            Id_Sucursales = Convert.ToInt32(dr["Suc"]),
+                            Tipo = Convert.ToInt32(dr["Año"]),
+                            Kilos = Convert.ToSingle(dr["TotalKilos"])
+                        });
+                    }
+                        ;
                 }
                 dr.Close();
                 sql.Close();
