@@ -14,9 +14,9 @@ namespace Planilla_WebApi.Controllers
                 
         // hhtpget para obtener las sucursales
         [HttpGet]
-        public IList<Ventas> GetVentasAnuales(int tipo = 0, bool mostrarSuc = false)
+        public IList<Ventas> GetVentasAnuales(int tipo = 0, bool mostrarSucs = false)
         {
-            var ventas = db.VentaAnuales(tipo, mostrarSuc)?.ToList();
+            var ventas = db.VentaAnuales(tipo, mostrarSucs)?.ToList();
             // Retornar la lista de sucursales
             return ventas ?? new List<Ventas>();
         }

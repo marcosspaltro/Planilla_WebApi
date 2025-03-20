@@ -16,7 +16,7 @@ namespace Planilla_WebApi.Conexiones
             string cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
-                $"WHERE YEAR(Fecha) >= 2002" +
+                $"WHERE YEAR(Fecha) >= 2002 " +
                 $"GROUP BY YEAR(Fecha){sSuc} " +
                 $"ORDER BY Año{sSuc}";
             if (tipo > 0)
@@ -24,7 +24,7 @@ namespace Planilla_WebApi.Conexiones
                 cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
-                $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo}" +
+                $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo} " +
                 $"GROUP BY YEAR(Fecha){sSuc} " +
                 $"ORDER BY Año{sSuc}";
             }
