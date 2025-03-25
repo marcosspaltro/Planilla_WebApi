@@ -1,5 +1,4 @@
-﻿
-namespace Planilla_WebApi.Modelos
+﻿namespace Planilla_WebApi.Modelos
 {
     public class Ofertas
     {
