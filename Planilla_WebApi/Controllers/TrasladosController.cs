@@ -19,7 +19,7 @@ namespace Planilla_WebApi.Controllers
         {
             DateTime fecha = DateTime.Today;
             Conexiones.dbTraslados datos = new Conexiones.dbTraslados();
-                        
+
             return datos.Traslados(sucS, sucE, fecha, tipo);
         }
 
@@ -46,16 +46,7 @@ namespace Planilla_WebApi.Controllers
                 return BadRequest("Algo paso");
             }
 
-
-            if (datos.Id > 0)
-            {
-                return Ok(datos.Id);
-            }
-            else
-            {
-
-                return BadRequest("Algo paso");
-            }
+            return Ok(datos.Id);
 
         }
 
