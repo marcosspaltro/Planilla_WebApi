@@ -13,7 +13,9 @@ namespace Planilla_WebApi.Conexiones
         #region " Ventas "
         public IList<Ventas>? Ventas(int f_suc, DateTime fecha, int tipo)
         {
-            string cadena = $"SELECT P.Id, P.Nombre Descripcion, ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
+            string cadena = $"SELECT P.Id, P.Nombre Descripcion" +
+                $", ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
+                $", ISNULL((SELECT V.Cantidad FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) cantidad " +
                 $"FROM Productos P WHERE P.Id_Tipo={tipo} AND P.Ver=1 " +
                 $" AND P.Id NOT IN(347, 347, 349, 350, 353) ORDER BY P.Id";                
                 
@@ -34,6 +36,7 @@ namespace Planilla_WebApi.Conexiones
                         Id_Productos = Convert.ToInt32(dr["Id"]),
                         Descripcion = dr["Descripcion"].ToString(),
                         Tipo = tipo,
+                        Cantidad = Convert.ToInt16(dr["cantidad"]),
                         Kilos = Convert.ToSingle(dr["Kilos"])
                     });
                 }
@@ -69,9 +72,9 @@ namespace Planilla_WebApi.Conexiones
 
             if (venta.Kilos > 0)
             {
-                cadena = $"INSERT INTO Ventas (Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, Costo_Venta, Costo_Compra) " +
+                cadena = $"INSERT INTO Ventas (Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, cantidad, Costo_Venta, Costo_Compra) " +
                         $"VALUES ('{venta.Fecha:MM/dd/yy}', {venta.Id_Sucursales}, 69, {venta.Id_Productos}, '{venta.Descripcion}',  {Math.Round(venta.Kilos, 3).ToString().Replace(",", ".")}" +
-                        $", 0, 0)";
+                        $", {venta.Cantidad}, 0, 0)";
                 cmd = new SqlCommand(cadena, sql);
                 try
                 {

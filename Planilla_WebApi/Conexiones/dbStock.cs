@@ -70,7 +70,8 @@ namespace Planilla_WebApi.Conexiones
 
             try
             {
-                int viejoID = Max_ID("Stock");
+                formulas f = new formulas();
+                int viejoID = f.Max_ID("Stock");
 
                 string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
                                         $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
@@ -86,8 +87,8 @@ namespace Planilla_WebApi.Conexiones
                 var d = command.ExecuteNonQuery();
 
                 sql.Close();
-
-                Id = Max_ID("Stock");
+                                
+                Id = f.Max_ID("Stock");
 
                 // Si es igual es que no se agrego
                 if (viejoID == Id)
@@ -142,29 +143,7 @@ namespace Planilla_WebApi.Conexiones
 
         }
 
-        public int Max_ID(string tabla, string Campo_ID = "Id")
-        {
-            int d = 0;
-
-            try
-            {
-                string Cadena = $"SELECT MAX({Campo_ID}) FROM {tabla}";
-
-                SqlCommand cmd = new SqlCommand(Cadena, sql);
-                cmd.CommandType = CommandType.Text;
-
-                sql.Open();
-                SqlDataAdapter daAdapt = new SqlDataAdapter(cmd);
-                d = (int)cmd.ExecuteScalar();
-
-                sql.Close();
-            }
-            catch (Exception)
-            {
-            }
-
-            return d;
-        }
+        
 
 
     }

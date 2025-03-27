@@ -73,13 +73,16 @@ namespace Planilla_WebApi.Conexiones
                 Productos p = new();
                 traslado.Descripcion = p.buscar_Descripcion(traslado.Id_Productos);
 
-                cadena = $"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, Kilos) " +
-                        $"VALUES ('{traslado.Fecha:MM/dd/yy}', {traslado.Suc_Salida}, {traslado.Suc_Entrada}, {traslado.Id_Productos}, '{traslado.Descripcion}',  {Math.Round(traslado.Kilos, 3).ToString().Replace(",", ".")})";
+                cadena = $"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, Kilos, Costo_Salida, Costo_Entrada) " +
+                        $"VALUES ('{traslado.Fecha:MM/dd/yy}', {traslado.Suc_Salida}, {traslado.Suc_Entrada}, {traslado.Id_Productos}, '{traslado.Descripcion}'" +
+                        $",  {Math.Round(traslado.Kilos, 3).ToString().Replace(",", ".")}, 0, 0)";
                 cmd = new SqlCommand(cadena, sql);
                 try
                 {
                     cmd.ExecuteNonQuery();
                     sql.Close();
+                    formulas formulas = new();
+                    Id = formulas.Max_ID("Traslados");
                 }
                 catch (Exception ex)
                 {

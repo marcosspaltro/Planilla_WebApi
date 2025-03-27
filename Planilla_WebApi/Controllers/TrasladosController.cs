@@ -15,8 +15,9 @@ namespace Planilla_WebApi.Controllers
 
         //   GET: api/<Traslados>
         [HttpGet(Name = "GetTraslados")]
-        public IList<Modelos.Traslados> Get(int sucS, int sucE, int tipo, DateTime fecha)
+        public IList<Modelos.Traslados> Get(int sucS, int sucE, int tipo)
         {
+            DateTime fecha = DateTime.Today;
             Conexiones.dbTraslados datos = new Conexiones.dbTraslados();
                         
             return datos.Traslados(sucS, sucE, fecha, tipo);
