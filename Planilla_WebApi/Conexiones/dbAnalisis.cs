@@ -1,6 +1,7 @@
 ﻿using Planilla_WebApi.Modelos;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection.Metadata;
 
 namespace Planilla_WebApi.Conexiones
 {
@@ -16,7 +17,7 @@ namespace Planilla_WebApi.Conexiones
             string cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
-                $"WHERE YEAR(Fecha) >= 2002" +
+                $"WHERE YEAR(Fecha) >= 2002 " +
                 $"GROUP BY YEAR(Fecha){sSuc} " +
                 $"ORDER BY Año{sSuc}";
             if (tipo > 0)
@@ -24,7 +25,7 @@ namespace Planilla_WebApi.Conexiones
                 cadena = $"SELECT YEAR(Fecha) AS Año{sSuc}, " +
                 $"FORMAT(SUM(Kilos), 'N0', 'es-ES') AS TotalKilos " +
                 $"FROM vw_VentaProductos " +
-                $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo}" +
+                $"WHERE YEAR(Fecha) >= 2002 AND Tipo={tipo} " +
                 $"GROUP BY YEAR(Fecha){sSuc} " +
                 $"ORDER BY Año{sSuc}";
             }
@@ -69,6 +70,73 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
+        public IEnumerable<Analisis>? Analisis(DateTime fecha, int suc = 0)
+        {
+            var dt = new DataTable("Datos");
+
+            try
+            {
+                SqlParameter p1 = new SqlParameter();
+                p1.ParameterName = "Suc";
+                if (suc <= 0)
+                {
+                    p1.Value = 0;
+                }
+                else
+                {
+                    p1.Value = suc;
+                }
+
+                SqlParameter p2 = new SqlParameter();
+                p2.ParameterName = "F1";
+                p2.Value = fecha;
+
+                SqlParameter p3 = new SqlParameter();
+                p3.ParameterName = "Cant";
+                p3.Value = 9;
+
+                SqlParameter[] parameter = new SqlParameter[] { p1, p2, p3 };
+
+                sql.Open();
+                SqlCommand cmd = new SqlCommand("dbo.sp_Analisis", sql);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddRange(parameter);
+
+                SqlDataAdapter daAdapt = new SqlDataAdapter(cmd);
+                daAdapt.Fill(dt);
+
+                List<Analisis> _Analisis = new();
+                foreach (DataRow dr in dt.Rows)
+                {
+                    _Analisis.Add(new()
+                    {
+                        Suc = Convert.ToInt32(dr["Suc"]),
+                        Balance = Convert.ToSingle(dr["Balance"]),
+                        Empleados = Convert.ToSingle(dr["Empleados"]),
+                        Gastos = Convert.ToSingle(dr["Gastos"]),
+                        Insumos = Convert.ToSingle(dr["Insumos"]),
+                        Descartes = Convert.ToSingle(dr["Descartes"]),
+                        Ofertas = Convert.ToSingle(dr["Ofertas"]),
+                        Traslados = Convert.ToSingle(dr["Traslados"]),
+                        Reintegros = Convert.ToSingle(dr["Reintegros"]),
+                        Gasto_Tes = Convert.ToSingle(dr["Gasto_Tesoreria"]),
+                        Mantenimiento = Convert.ToSingle(dr["Mantenimiento"]),
+                        Gasto_Emp = Convert.ToSingle(dr["Gasto_Emp"]),
+                        Empleados_Emp = Convert.ToSingle(dr["Empleados_Emp"]),
+                        Cant = Convert.ToInt32(dr["Cant"]),
+                        Ganancia = Convert.ToSingle(dr["Ganancia"]),
+                        Resultado = Convert.ToSingle(dr["Resultado"])
+                    });
+                }
+                return _Analisis;
+            }
+            catch (Exception er)
+            {
+                Console.WriteLine("Error en la consulta:" + er.Message);
+                dt = null;
+            }
+            return null;
+        }
     }
 }
 
