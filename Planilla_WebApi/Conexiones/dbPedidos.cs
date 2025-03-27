@@ -24,9 +24,10 @@ namespace Planilla_WebApi.Conexiones
             f = f.AddDays(-rd + 1);
 
             sql.Open();
-            SqlCommand cmd = new SqlCommand($"SELECT *, ISNULL((SELECT TOP 1 Kilos FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1).ToString("MM/dd/yyyy")}' AND Id_Productos = Prod),0) AS Stock," +
+            SqlCommand cmd = new SqlCommand($"SELECT *, ISNULL((SELECT TOP 1 Kilos / (SELECT ISNULL((SELECT Promedio FROM Promedios_Pedidos WHERE Id_Producto = Prod AND Fecha <= '{f.ToString("MM/dd/yyyy")}'), 1)) " +
+                $"FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1).ToString("MM/dd/yyyy")}' AND Id_Productos = Prod),0) AS Stock," +
                 $" ISNULL((SELECT SUM(Kilos) FROM Pedidos WHERE fecha BETWEEN '{f.ToString("MM/dd/yyyy")}' AND '{f.AddDays(6).ToString("MM/dd/yyyy")}' AND Suc = {f_suc} AND id_Producto = Prod), 0) As Pedido" +
-                $" FROM (SELECT Prod, Tipo, Nombre, CONVERT(varchar(10), FECHA, 103) AS Semana, ISNULL( Kilos, 0) AS tKilos  FROM vw_VentaProductos WHERE Suc={f_suc}) AS Venta  " +
+                $" FROM (SELECT Prod, Tipo, Nombre, CONVERT(varchar(10), FECHA, 103) AS Semana, ISNULL( Kilos, 0)  / (SELECT ISNULL((SELECT Promedio FROM Promedios_Pedidos WHERE Id_Producto = Prod AND Fecha <= '{f.ToString("MM/dd/yyyy")}'), 1)) AS tKilos  FROM vw_VentaProductos WHERE Suc={f_suc}) AS Venta  " +
                 $"PIVOT (SUM (tKilos) FOR Semana IN([{f.AddDays(-35).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-28).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-21).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-14).ToString("dd/MM/yyyy")}])) AS VENTAS   ORDER BY Prod", sql);
 
             cmd.CommandType = CommandType.Text;
