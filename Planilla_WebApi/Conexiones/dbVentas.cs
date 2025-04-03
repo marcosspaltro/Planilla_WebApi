@@ -17,7 +17,7 @@ namespace Planilla_WebApi.Conexiones
                 $", ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
                 $", ISNULL((SELECT V.Cantidad FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) cantidad " +
                 $"FROM Productos P WHERE P.Id_Tipo={tipo} AND P.Ver=1 " +
-                $" AND P.Id NOT IN(347, 347, 349, 350, 353) ORDER BY P.Id";                
+                $" AND P.Id NOT IN(347, 347, 349, 350, 353, 401, 402) ORDER BY P.Id";                
                 
             sql.Open();
             SqlCommand cmd = new SqlCommand(cadena, sql);
