@@ -36,7 +36,7 @@ namespace Planilla_WebApi.Conexiones
                         Id_Productos = Convert.ToInt32(dr["Id"]),
                         Descripcion = dr["Descripcion"].ToString(),
                         Tipo = tipo,
-                        Cantidad = Convert.ToInt16(dr["cantidad"]),
+                        Cantidad = Convert.ToSingle(dr["cantidad"]),
                         Kilos = Convert.ToSingle(dr["Kilos"])
                     });
                 }
@@ -74,7 +74,7 @@ namespace Planilla_WebApi.Conexiones
             {
                 cadena = $"INSERT INTO Ventas (Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, cantidad, Costo_Venta, Costo_Compra) " +
                         $"VALUES ('{venta.Fecha:MM/dd/yy}', {venta.Id_Sucursales}, 69, {venta.Id_Productos}, '{venta.Descripcion}',  {Math.Round(venta.Kilos, 3).ToString().Replace(",", ".")}" +
-                        $", {venta.Cantidad}, 0, 0)";
+                        $",  {Math.Round(venta.Cantidad, 3).ToString().Replace(",", ".")}, 0, 0)";
                 cmd = new SqlCommand(cadena, sql);
                 try
                 {

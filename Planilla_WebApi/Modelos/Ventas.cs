@@ -16,7 +16,7 @@ namespace Planilla_WebApi.Modelos
         public int Id_Productos { get; set; }
         public string? Descripcion { get; set; }
         public double Kilos { get; set; }
-        public int Cantidad { get; set; }
+        public Single Cantidad { get; set; }
         public int Tipo { get; set; }
     }
     
