@@ -10,6 +10,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuración de Kestrel con puertos fijos
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5056); // HTTP
+    options.ListenAnyIP(7056, listenOptions =>
+    {
+        listenOptions.UseHttps(); // HTTPS (requiere certificado)
+    });
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -21,6 +31,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader();
         });
 });
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -83,8 +94,8 @@ app.UseHttpsRedirection();
 //});
 
 
+app.UseRouting();
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();

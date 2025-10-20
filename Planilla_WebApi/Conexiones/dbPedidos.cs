@@ -24,11 +24,13 @@ namespace Planilla_WebApi.Conexiones
             f = f.AddDays(-rd + 1);
 
             sql.Open();
-            SqlCommand cmd = new SqlCommand($"SELECT *, ISNULL((SELECT TOP 1 Kilos / (SELECT ISNULL((SELECT Promedio FROM Promedios_Pedidos WHERE Id_Producto = Prod AND Fecha <= '{f.ToString("MM/dd/yyyy")}'), 1)) " +
-                $"FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1).ToString("MM/dd/yyyy")}' AND Id_Productos = Prod),0) AS Stock," +
-                $" ISNULL((SELECT SUM(Kilos) FROM Pedidos WHERE fecha BETWEEN '{f.ToString("MM/dd/yyyy")}' AND '{f.AddDays(6).ToString("MM/dd/yyyy")}' AND Suc = {f_suc} AND id_Producto = Prod), 0) As Pedido" +
-                $" FROM (SELECT Prod, Tipo, Nombre, CONVERT(varchar(10), FECHA, 103) AS Semana, ISNULL( Kilos, 0)  / (SELECT ISNULL((SELECT Promedio FROM Promedios_Pedidos WHERE Id_Producto = Prod AND Fecha <= '{f.ToString("MM/dd/yyyy")}'), 1)) AS tKilos  FROM vw_VentaProductos WHERE Suc={f_suc}) AS Venta  " +
-                $"PIVOT (SUM (tKilos) FOR Semana IN([{f.AddDays(-35).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-28).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-21).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-14).ToString("dd/MM/yyyy")}])) AS VENTAS   ORDER BY Prod", sql);
+            string cmdText = $"SELECT *" +
+                $", IIF(Prod=1, ISNULL((SELECT SUM(Kilos) FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1):MM/dd/yyy}' AND Id_Productos <100), 0), " +
+                $" ISNULL((SELECT SUM(Kilos) FROM Stock WHERE Id_Sucursales = {f_suc} AND Fecha = '{f.AddDays(-1).ToString("MM/dd/yyyy")}' AND Id_Productos = Prod),0)) AS Stock," +
+                $" ISNULL((SELECT SUM(Kilos) FROM Pedidos WHERE fecha='{DateTime.Today:MM/dd/yyyy}' AND Suc = {f_suc} AND id_Producto = Prod), 0) As Pedido" +
+                $" FROM (SELECT Prod, Tipo, Nombre, CONVERT(varchar(10), FECHA, 103) AS Semana, ISNULL( Kilos, 0) AS tKilos  FROM vw_VentaProductos WHERE VerEnPedidos=1 AND Suc={f_suc}) AS Venta  " +
+                $"PIVOT (SUM (tKilos) FOR Semana IN([{f.AddDays(-35).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-28).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-21).ToString("dd/MM/yyyy")}] ,  [{f.AddDays(-14).ToString("dd/MM/yyyy")}])) AS VENTAS   ORDER BY Prod";
+            SqlCommand cmd = new SqlCommand(cmdText, sql);
 
             cmd.CommandType = CommandType.Text;
             List<Pedidos> _Pedidoss = new();
@@ -118,7 +120,11 @@ namespace Planilla_WebApi.Conexiones
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
-                sql.Open();
+
+                if (sql.State == ConnectionState.Closed)
+                {
+                    sql.Open();
+                }
 
                 var d = command.ExecuteNonQuery();
 
@@ -160,6 +166,57 @@ namespace Planilla_WebApi.Conexiones
                 escribirLog(e.Message);
             }
 
+        }
+
+        public bool BorrarPedido(int id)
+        {
+            try
+            {
+                string cmdText = "DELETE FROM Pedidos WHERE Id = @Id";
+                SqlCommand command = new SqlCommand(cmdText, sql);
+                command.CommandType = CommandType.Text;
+                command.Parameters.AddWithValue("@Id", id);
+
+                command.Connection = sql;
+                sql.Open();
+                int rowsAffected = command.ExecuteNonQuery();
+                sql.Close();
+
+                return rowsAffected > 0;
+            }
+            catch (Exception e)
+            {
+                escribirLog(e.Message);
+                if (sql.State == System.Data.ConnectionState.Open)
+                    sql.Close();
+                return false;
+            }
+        }
+
+        public bool BorrarPedido(int sucursal, int producto)
+        {
+            try
+            {
+                string cmdText = "DELETE FROM Pedidos WHERE Suc = @Suc AND Id_Producto = @Prod AND Fecha = CAST(GETDATE() AS DATE)";
+                SqlCommand command = new SqlCommand(cmdText, sql);
+                command.CommandType = CommandType.Text;
+                command.Parameters.AddWithValue("@Suc", sucursal);
+                command.Parameters.AddWithValue("@Prod", producto);
+
+                command.Connection = sql;
+                sql.Open();
+                int rowsAffected = command.ExecuteNonQuery();
+                sql.Close();
+
+                return rowsAffected > 0;
+            }
+            catch (Exception e)
+            {
+                escribirLog(e.Message);
+                if (sql.State == System.Data.ConnectionState.Open)
+                    sql.Close();
+                return false;
+            }
         }
 
         #endregion

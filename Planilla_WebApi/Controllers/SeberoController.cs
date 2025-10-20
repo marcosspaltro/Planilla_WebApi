@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
-using System.Data;
 
 
 namespace Planilla_WebApi.Controllers
@@ -49,6 +47,6 @@ namespace Planilla_WebApi.Controllers
 
         }
 
-        
+
     }
 }

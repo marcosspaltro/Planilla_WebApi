@@ -11,13 +11,21 @@ namespace Planilla_WebApi.Conexiones
         public int Id;
 
         #region " Ventas "
-        public IList<Ventas>? Ventas(int f_suc, DateTime fecha, int tipo)
+        public IList<Ventas>? Ventas(int f_suc, DateTime fecha, int tipo = 0)
         {
             string cadena = $"SELECT P.Id, P.Nombre Descripcion" +
                 $", ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
                 $", ISNULL((SELECT V.Cantidad FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) cantidad " +
                 $"FROM Productos P WHERE P.Id_Tipo={tipo} AND P.Ver=1 " +
                 $" AND P.Id NOT IN(347, 347, 349, 350, 353, 401, 402) ORDER BY P.Id";                
+            if (tipo == 0)
+            {
+                cadena = $"SELECT P.Id, P.Nombre Descripcion" +
+                $", ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
+                $", ISNULL((SELECT V.Cantidad FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) cantidad " +
+                $"FROM Productos P WHERE P.Ver=1 " +
+                $" ORDER BY P.Id";
+            }
                 
             sql.Open();
             SqlCommand cmd = new SqlCommand(cadena, sql);
@@ -53,7 +61,7 @@ namespace Planilla_WebApi.Conexiones
                 return _Ventas;
             }
         }
-
+        
         public void Agregar(Ventas venta)
         {
             sql.Open();

@@ -15,12 +15,11 @@ namespace Planilla_WebApi.Conexiones
 
         }
         #region " STOCK "
-        public IList<Stock>? Stocks(int f_suc)
+        public IList<Stock>? Stocks(int f_suc, DateTime semana, bool anterior = false)
         {
-            DateTime f = DateTime.Today;
-            int rd = (int)f.DayOfWeek;
+            DateTime f = semana.AddDays(6);           
 
-            f = f.AddDays(-rd);
+            if (anterior) { f = f.AddDays(-7); }
 
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT ID, Nombre AS Descripcion" +
@@ -41,7 +40,7 @@ namespace Planilla_WebApi.Conexiones
                 {
                     _Stocks.Add(new()
                     {
-                        Fecha = Convert.ToDateTime(dr["Fecha"].ToString()),
+                        Fecha = (DateTime)dr["Fecha"],
                         Sucursal = Convert.ToInt32(dr["ID_Sucursales"]),
                         Producto = Convert.ToInt32(dr["ID"]),
                         Tipo = Convert.ToInt32(dr["Id_Tipo"]),
@@ -63,20 +62,19 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
-        public void Agregar_registro(int suc, int Id_prod, double Kilos)
+        public void Agregar_registro(int suc, DateTime semana, int Id_prod, double Kilos)
         {
-            string nfecha = "DATEADD(DAY, -1, (SELECT MAX(Semana) FROM Semanas))";
-
-
             try
             {
                 formulas f = new formulas();
                 int viejoID = f.Max_ID("Stock");
 
-                string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
-                                        $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Costo_Franquicia, Kilos) " +
+                                        $"VALUES('{semana.AddDays(6):MM/dd/yy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                        $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
+                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC)" +
+                                        $"ISNULL((SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
+                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC), 0)" +
                                         $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
 
                 SqlCommand command = new SqlCommand(cmdText, sql);
@@ -109,8 +107,8 @@ namespace Planilla_WebApi.Conexiones
             try
             {
 
-                SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} AND id <> " +
-                    $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = {nfecha} AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                SqlCommand command = new SqlCommand($"DELETE FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = '{semana.AddDays(6):MM/dd/yy}' AND Id_Productos = {Id_prod} AND id <> " +
+                    $" (SELECT TOP 1 id FROM Stock WHERE Id_Sucursales = {suc} AND Fecha = ' {semana.AddDays(6):MM/dd/yy} ' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
                 sql.Open();

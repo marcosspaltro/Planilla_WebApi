@@ -8,6 +8,9 @@
         public int Id_Productos { get; set; }
         public string ?Descripcion { get; set; }
         public float Kilos { get; set; }
+        public float Costo_Salida { get; set; }
+        public string Nombre_Entrada { get; set; } = string.Empty;
+        public float  Total_Salida { get; set; }
         public int Id_Tipo { get; set; }
 
     }

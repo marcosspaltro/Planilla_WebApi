@@ -13,5 +13,7 @@ namespace Planilla_WebApi.Modelos
         public int Id_Sucursales { get; set; }
         public string? Descripcion { get; set; }
         public int Items { get; set; }
+        public  float Kilos { get; set; }
+        public float Total { get; set; }
     }
 }

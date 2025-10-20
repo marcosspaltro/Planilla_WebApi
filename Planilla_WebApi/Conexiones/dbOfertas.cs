@@ -17,8 +17,7 @@ namespace Planilla_WebApi.Conexiones
         }
         #region " Ofertas "
         public IList<Ofertas>? Ofertas(int f_suc, DateTime dia)
-        {
-            
+        {                        
             sql.Open();
   
             string nFecha = $"'{dia:MM/dd/yyy}'";

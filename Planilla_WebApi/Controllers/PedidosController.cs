@@ -68,5 +68,30 @@ namespace Planilla_WebApi.Controllers
             }
 
         }
+
+        // Implementar el borrado
+        [HttpDelete("{id}"), Authorize]
+        public ActionResult Delete(int id)
+        {
+            Conexiones.dbPedidos datos = new Conexiones.dbPedidos();
+            bool borrado = datos.BorrarPedido(id);
+
+            if (borrado)
+                return Ok($"Pedido con id {id} borrado correctamente.");
+            else
+                return NotFound($"No se encontró el pedido con id {id} o no se pudo borrar.");
+        }
+
+        [HttpDelete("{sucursal}/{producto}"), Authorize]
+        public ActionResult Delete(int sucursal, int producto)
+        {
+            Conexiones.dbPedidos datos = new Conexiones.dbPedidos();
+            bool borrado = datos.BorrarPedido(sucursal, producto);
+
+            if (borrado)
+                return Ok($"Pedido del producto {producto} en la sucursal {sucursal} borrado correctamente para la fecha actual.");
+            else
+                return NotFound($"No se encontró el pedido del producto {producto} en la sucursal {sucursal} para la fecha actual o no se pudo borrar.");
+        }
     }
 }

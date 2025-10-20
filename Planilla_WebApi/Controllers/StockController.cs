@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
 
@@ -11,18 +10,29 @@ namespace Planilla_WebApi.Controllers
     public class StockController : ControllerBase
     {
         public StockController(IConfiguration configuration, IUserService userService)
-        {            
+        {
         }
 
 
-        //   GET: api/<Stock>
+        //   GET: api/Stock
         [HttpGet(Name = "GetStock")]
-        public IList<Modelos.Stock> Get(int sucursal)
+        public IList<Modelos.Stock> Get(int sucursal, DateTime semana)
+        {
+            Conexiones.dbStock datos = new Conexiones.dbStock();
+            
+            if (sucursal == 6005) { sucursal = 1; }
+
+            return datos.Stocks(sucursal, semana, false);
+        }
+
+        [HttpGet]
+        [Route("StockAnt")]
+        public IList<Modelos.Stock> GetAnt(int sucursal, DateTime semana)
         {
             Conexiones.dbStock datos = new Conexiones.dbStock();
 
-            if (sucursal > 1000) { sucursal -= 1000; }
-            return datos.Stocks(sucursal);
+            if (sucursal == 6005) { sucursal = 1; }
+            return datos.Stocks(sucursal, semana, true);
         }
 
 
@@ -32,21 +42,24 @@ namespace Planilla_WebApi.Controllers
         {
             Conexiones.dbStock datos = new Conexiones.dbStock();
 
-            // Validar el modelo recibido
-            if (!ModelState.IsValid)
-            {
-                datos.escribirLog("Modelo invalido");
-                return BadRequest(ModelState);
+            s.fecha = DateTime.Today.AddDays(-7);
+            datos.Agregar_registro(s.suc, s.fecha, s.id_prod, s.kilos);
+            //// Validar el modelo recibido
+            //if (!ModelState.IsValid)
+            //{
+            //    datos.escribirLog("Modelo invalido");
+            //    return BadRequest(ModelState);
 
-            }
-            try
-            {
-                datos.Agregar_registro(s.suc, s.id_prod, s.kilos);
-            }
-            catch (Exception e)
-            {
-                return BadRequest("Algo paso");
-            }
+            //}
+            //try
+            //{
+            //    s.fecha = DateTime.Today.AddDays(-7);
+            //    datos.Agregar_registro(s.suc, s.fecha, s.id_prod, s.kilos);
+            //}
+            //catch (Exception e)
+            //{
+            //    return BadRequest("Algo paso");
+            //}
 
 
             if (datos.Id > 0)
@@ -61,7 +74,7 @@ namespace Planilla_WebApi.Controllers
 
         }
 
-        
+
 
     }
 }
