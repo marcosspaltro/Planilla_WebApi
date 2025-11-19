@@ -17,9 +17,7 @@ namespace Planilla_WebApi.Controllers
         public IList<Modelos.Principal> Get(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-
-            if (sucursal == 6005) { sucursal = 1; }
-
+                        
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
@@ -31,8 +29,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frCarne> GetCarne(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-
-            if (sucursal == 6005) { sucursal = 1; }
+                        
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
@@ -45,12 +42,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frMercaderiaSemana> GetMercaderiaSemana(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-                //fecha = fecha.AddDays(-7); // si es la 6005, se consulta la 1 de la semana anterior
-            }
+                        
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
@@ -63,12 +55,7 @@ namespace Planilla_WebApi.Controllers
         public IList<Ventas> GetMercaderiaDia(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbVentas datos = new Conexiones.dbVentas();
-
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-                fecha = fecha.AddDays(-7); // si es la 6005, se consulta la 1 de la semana anterior
-            }
+                        
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
@@ -82,11 +69,7 @@ namespace Planilla_WebApi.Controllers
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
 
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-                //fecha = fecha.AddDays(-7); // si es la 6005, se consulta la 1 de la semana anterior
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
@@ -99,10 +82,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frMercaderiaSemana> GetDescartesSemana(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.DescartesSemana(fecha, sucursal);
@@ -113,10 +93,7 @@ namespace Planilla_WebApi.Controllers
         public IList<Traslados> GetTrasldosSalida(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+           
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.TrasladosSemana(fecha, sucursal, true);
@@ -126,10 +103,7 @@ namespace Planilla_WebApi.Controllers
         public IList<Traslados> GetTrasldosEntrada(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.TrasladosSemana(fecha, sucursal, false);
@@ -140,10 +114,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frGastosOficina> GetGastosOficina(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+           
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.GastosOficina(fecha, sucursal);
@@ -154,10 +125,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frGastosOficina> GetEfectivosSemana(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.EfectivosSemana(fecha, sucursal);
@@ -181,10 +149,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frTarjetas> GetTarjetas(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.TarjetasSemana(fecha, sucursal, false);
@@ -194,10 +159,7 @@ namespace Planilla_WebApi.Controllers
         public IList<frTarjetas> GetTarjetasSemana(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
-            if (sucursal == 6005)
-            {
-                sucursal = 1;
-            }
+            
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
             return datos.TarjetasSemana(fecha, sucursal, true);

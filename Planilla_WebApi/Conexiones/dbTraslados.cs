@@ -72,11 +72,28 @@ namespace Planilla_WebApi.Conexiones
             {
                 Productos p = new();
                 traslado.Descripcion = p.buscar_Descripcion(traslado.Id_Productos);
+                
+                // Primero buscar los precios de franquicia
+                dbPrecios pr = new dbPrecios();
+                traslado.Costo_SalidaFR = pr.Precio_Franquicia(traslado.Suc_Salida, traslado.Id_Productos, traslado.Fecha);
+                traslado.Costo_EntradaFR = pr.Precio_Franquicia(traslado.Suc_Entrada, traslado.Id_Productos, traslado.Fecha);
 
-                cadena = $"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, Kilos, Costo_Salida, Costo_Entrada) " +
-                        $"VALUES ('{traslado.Fecha:MM/dd/yy}', {traslado.Suc_Salida}, {traslado.Suc_Entrada}, {traslado.Id_Productos}, '{traslado.Descripcion}'" +
-                        $",  {Math.Round(traslado.Kilos, 3).ToString().Replace(",", ".")}, 0, 0)";
+
+                cadena = @"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, Kilos, Costo_Salida, Costo_Entrada, Costo_SalidaFR, Costo_EntradaFR) 
+                            VALUES(@fecha, @sucS, @sucE, @prod, @desc, @kilos, @costoS, @costoE, @costoSFR, @costoEFR)";
                 cmd = new SqlCommand(cadena, sql);
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@fecha", traslado.Fecha);
+                cmd.Parameters.AddWithValue("@sucS", traslado.Suc_Salida);
+                cmd.Parameters.AddWithValue("@sucE", traslado.Suc_Entrada);
+                cmd.Parameters.AddWithValue("@prod", traslado.Id_Productos);
+                cmd.Parameters.AddWithValue("@desc", traslado.Descripcion);
+                cmd.Parameters.AddWithValue("@kilos", traslado.Kilos);
+                cmd.Parameters.AddWithValue("@costoS", traslado.Costo_Salida);
+                cmd.Parameters.AddWithValue("@costoE", traslado.Costo_Entrada);
+                cmd.Parameters.AddWithValue("@costoSFR", traslado.Costo_SalidaFR);
+                cmd.Parameters.AddWithValue("@costoEFR", traslado.Costo_EntradaFR);
+
                 try
                 {
                     cmd.ExecuteNonQuery();

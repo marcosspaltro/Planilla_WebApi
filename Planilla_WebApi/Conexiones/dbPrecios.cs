@@ -47,9 +47,79 @@ namespace Planilla_WebApi.Conexiones
                 return _Precioss;
             }
         }
-
         
+        //public Precios Precio_Franquicia(int f_suc, int prod, DateTime? fecha = null)
+        //{
+        //    fecha = fecha ?? DateTime.Today;
 
+        //    sql.Open();
+        //    SqlCommand cmd = new SqlCommand("SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Fecha<=@fecha" +
+        //        $"  AND Id_Productos = @prod AND Id_Sucursales=@suc ORDER BY Fecha DESC", sql);
+
+        //    cmd.CommandType = CommandType.Text;
+        //    cmd.Parameters.AddWithValue("@fecha", fecha);
+        //    cmd.Parameters.AddWithValue("@prod", prod);
+        //    cmd.Parameters.AddWithValue("@suc", f_suc);
+
+        //    Precios _precio = new();
+        //    try
+        //    {
+        //        SqlDataReader dr = cmd.ExecuteReader();
+
+        //        while (dr.Read())
+        //        {
+        //            _precio = new()
+        //            {
+        //                Producto = prod,
+        //                Precio = Convert.ToSingle(dr["Precio"])
+        //            };                    
+        //        }
+
+        //        dr.Close();
+        //        sql.Close();
+
+        //        return _precio;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //        _precio.Producto = prod;
+        //        _precio.Precio = 0;
+        //        return _precio;
+        //    }
+        //}
+
+        public float Precio_Franquicia(int f_suc, int prod, DateTime? fecha = null)
+        {
+            fecha = fecha ?? DateTime.Today;
+            float precio = 0;
+
+            sql.Open();
+            SqlCommand cmd = new SqlCommand("SELECT TOP 1 ISNULL(Precio, 0) FROM Precios_Franquicia WHERE Fecha<=@fecha" +
+                $"  AND Id_Productos = @prod AND Id_Sucursales=@suc ORDER BY Fecha DESC", sql);
+
+            cmd.CommandType = CommandType.Text;
+            cmd.Parameters.AddWithValue("@fecha", fecha);
+            cmd.Parameters.AddWithValue("@prod", prod);
+            cmd.Parameters.AddWithValue("@suc", f_suc);
+
+
+            try
+            {
+                precio = cmd.ExecuteNonQuery();
+                if(precio < 0)
+                {
+                    precio = 0;
+                }
+            }
+            catch (Exception)
+            {
+                precio = 0;                
+            }
+
+            sql.Close();
+            return precio;
+        }
         #endregion
     }
 }

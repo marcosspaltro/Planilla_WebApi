@@ -80,13 +80,33 @@ namespace Planilla_WebApi.Conexiones
 
             if (venta.Kilos > 0)
             {
-                cadena = $"INSERT INTO Ventas (Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, cantidad, Costo_Venta, Costo_Compra) " +
-                        $"VALUES ('{venta.Fecha:MM/dd/yy}', {venta.Id_Sucursales}, 69, {venta.Id_Productos}, '{venta.Descripcion}',  {Math.Round(venta.Kilos, 3).ToString().Replace(",", ".")}" +
-                        $",  {Math.Round(venta.Cantidad, 3).ToString().Replace(",", ".")}, 0, 0)";
+                // Buscar el precio franquicia
+                float pr = 0; 
+                dbPrecios dbp = new dbPrecios();
+                pr = dbp.Precio_Franquicia(venta.Id_Productos, venta.Id_Sucursales, venta.Fecha);
+              
+                cadena = "INSERT INTO Ventas " +
+                    "(Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, cantidad, Costo_Venta, Costo_Compra, Costo_Franquicia) " +
+         "VALUES (@Fecha, @Id_Sucursales, @Id_Proveedores, @Id_Productos, @Descripcion, @Kilos, @Cantidad, @Costo_Venta, @Costo_Compra, @Costo_Franquicia)";
+
                 cmd = new SqlCommand(cadena, sql);
+
+                // Agregar parámetros
+                cmd.Parameters.AddWithValue("@Fecha", venta.Fecha);
+                cmd.Parameters.AddWithValue("@Id_Sucursales", venta.Id_Sucursales);
+                cmd.Parameters.AddWithValue("@Id_Proveedores", 69);
+                cmd.Parameters.AddWithValue("@Id_Productos", venta.Id_Productos);
+                cmd.Parameters.AddWithValue("@Descripcion", venta.Descripcion);
+                cmd.Parameters.AddWithValue("@Kilos", venta.Kilos);
+                cmd.Parameters.AddWithValue("@Cantidad", venta.Cantidad);
+                cmd.Parameters.AddWithValue("@Costo_Venta", 0);
+                cmd.Parameters.AddWithValue("@Costo_Compra", 0);
+                cmd.Parameters.AddWithValue("@Costo_Franquicia", pr);
+
                 try
                 {
-                    cmd.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();                    
+
                     sql.Close();
                 }
                 catch (Exception ex)

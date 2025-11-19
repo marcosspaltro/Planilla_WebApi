@@ -28,12 +28,7 @@ namespace Planilla_WebApi.Controllers
         public async Task<ActionResult<IEnumerable<VentasTipo>>> GetVentasByFecha(int sucursal)
         {
             DateTime fecha = DateTime.Today;
-            if (sucursal == 6005)
-            {
-                fecha = new DateTime(2025, 2, 18);
-                sucursal = 10;
-            }
-
+            
             try
             {
                 var Ventas = await _context.vw_VentasTipo

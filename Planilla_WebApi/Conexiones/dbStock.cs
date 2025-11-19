@@ -70,10 +70,10 @@ namespace Planilla_WebApi.Conexiones
                 int viejoID = f.Max_ID("Stock");
 
                 string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Costo_Franquicia, Kilos) " +
-                                        $"VALUES('{semana.AddDays(6):MM/dd/yy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
-                                        $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC)" +
-                                        $"ISNULL((SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
+                                        $" VALUES('{semana.AddDays(6):MM/dd/yy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
+                                        $" (SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
+                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC)," +
+                                        $" ISNULL((SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
                                         $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC), 0)" +
                                         $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
 
@@ -133,9 +133,11 @@ namespace Planilla_WebApi.Conexiones
             SqlCommand command = new SqlCommand($"INSERT INTO logApi (fecha, texto) VALUES('{s}', '{e}')", sql);
             command.CommandType = CommandType.Text;
             command.Connection = sql;
-            sql.Open();
+            
+            if (sql.State == ConnectionState.Closed) sql.Open();
 
-            var d = command.ExecuteNonQuery();
+
+            //var d = command.ExecuteNonQuery();
 
             sql.Close();
 

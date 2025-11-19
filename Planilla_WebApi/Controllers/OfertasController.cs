@@ -17,7 +17,7 @@ namespace Planilla_WebApi.Controllers
         [HttpGet(Name = "GetOfertas")]
         public IList<Modelos.Ofertas> Get(int sucursal, DateTime dia)
         {
-            if (sucursal == 6005) { sucursal = 1; }
+            
             Conexiones.dbOfertas datos = new Conexiones.dbOfertas();
                         
             return datos.Ofertas(sucursal, dia);
