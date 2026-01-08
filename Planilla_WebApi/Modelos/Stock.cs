@@ -14,6 +14,7 @@ namespace Planilla_WebApi.Modelos
         public string? Descripcion { get; set; }
         public float Kilos { get; set; }
         public int Tipo { get; set; }
+        public float Precio { get; set; }
 
         public Stock()
         {

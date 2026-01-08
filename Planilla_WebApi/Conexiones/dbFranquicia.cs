@@ -409,5 +409,41 @@ namespace Planilla_WebApi.Conexiones
                 return _Datos;
             }
         }
+
+        internal IList<Stock> Stock(DateTime fecha, int sucursal)
+        {
+            sql.Open();
+            SqlCommand cmd = new SqlCommand("sp_frStock", sql);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@F", fecha);
+            cmd.Parameters.AddWithValue("@Suc", sucursal);
+
+            List<Modelos.Stock> _Datos = new();
+            try
+            {
+                SqlDataReader dr = cmd.ExecuteReader();
+                while (dr.Read())
+                {
+                    _Datos.Add(new()
+                    {
+                        Fecha = DateTime.Parse(dr["Fecha"].ToString()),
+                        Producto = Convert.ToInt32(dr["Producto"]),
+                        Descripcion = dr["Descripcion"].ToString(),
+                        Kilos = Convert.ToSingle(dr["Kilos"]),
+                        Tipo = Convert.ToInt32(dr["Tipo"]),
+                        Precio = Convert.ToSingle(dr["Precio"])
+                    });
+                }
+                dr.Close();
+                sql.Close();
+                return _Datos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                _Datos = null;
+                return _Datos;
+            }
+        }
     }
 }
