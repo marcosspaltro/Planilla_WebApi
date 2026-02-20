@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
 namespace Planilla_WebApi.Controllers
@@ -46,20 +48,18 @@ namespace Planilla_WebApi.Controllers
             // convertir la fecha al lunes de la semana
             fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
-            return datos.MercadeiaSemana(fecha, sucursal);
+            return datos.MercaderiaSemana(fecha, sucursal);
 
         }
 
         // GET: api/mercaderia_dia
         [HttpGet("mercaderia_dia")]
-        public IList<Ventas> GetMercaderiaDia(DateTime fecha, int sucursal = 1)
+        public IList<frMercaderiaSemana> GetMercaderiaDia(DateTime fecha, int sucursal, int tipo)
         {
-            Conexiones.dbVentas datos = new Conexiones.dbVentas();
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
 
-            // convertir la fecha al lunes de la semana
-            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
 
-            return datos.Ventas(sucursal, fecha);
+            return datos.MercaderiaDia(fecha, sucursal, tipo);
 
         }
 
@@ -165,15 +165,209 @@ namespace Planilla_WebApi.Controllers
             return datos.TarjetasSemana(fecha, sucursal, true);
         }
 
-        // GET: api/stockant
-        [HttpGet("stockant")]
-        public IList<Modelos.Stock> GetStockAnt(DateTime fecha, int sucursal = 1)
+        // GET: api/stock
+        [HttpGet("stock")]
+        public IList<Modelos.Stock> GetStock(DateTime fecha, int sucursal = 1)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
 
-            // convertir la fecha al lunes de la semana anterior
-            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday).AddDays(-7);
             return datos.Stock(fecha, sucursal);
+        }
+        // GET: api/tipos_entregas
+        [HttpGet("tipos_entregas")]
+        public IList<Tipo_Entrega> GetTiposEntregas()
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            return datos.TiposEntregas();
+        }
+
+        // GET: api/entregas_semana
+        [HttpGet("entregas_semana")]
+        public IList<Entrega> GetEntregas_semana(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+
+            return datos.Entregas_semana(fecha, sucursal);
+        }
+
+        // GET: api/entregas
+        [HttpGet("entregas")]
+        public IList<Entrega> GetEntregas(DateTime fecha, int sucursal = 1, int tipo = 100)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+
+            return datos.Entregas(fecha, sucursal, tipo);
+        }
+
+        // POST: api/entrega
+        [HttpPost("entrega"), Authorize]
+        public ActionResult Post([FromBody] Entrega entrega)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            int id = datos.Nueva_Entrega(entrega);
+            if (id > 0)
+                return Ok(id);
+            else
+                return BadRequest("No se pudo agregar la entrega.");
+        }
+
+        // DELETE: api/entrega/5
+        [HttpDelete("entrega/{id}"), Authorize]
+        public ActionResult Delete(int id)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            bool result = datos.Eliminar_Entrega(id);
+            if (result)
+                return Ok();
+            else
+                return BadRequest("No se pudo eliminar la entrega.");
+        }
+
+        // PUT: api/entrega/5
+        [HttpPut("entrega/{id}"), Authorize]
+        public ActionResult Put(int id, float importe)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            bool result = datos.Actualizar_Entrega(id, importe);
+            if (result)
+                return Ok();
+            else
+                return BadRequest("No se pudo actualizar la entrega.");
+        }
+
+
+        // GET: cuenta_corriente
+        [HttpGet("cuenta_corriente/{suc}")]
+        public IList<CuentaCorriente> GetCuentaCorriente(int suc, [FromQuery] DateTime semana)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            return datos.CuentaCorriente(suc, semana);
+        }
+
+        // GET: cuenta_corriente/detalle
+        [HttpGet("cuenta_corriente/detalle/{suc}")]
+        public IList<frMercaderiaSemana> GetCuentaCorrienteDetalle(int suc, [FromQuery] DateTime semana, [FromQuery] int id, [FromQuery] int tipo)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            //0.Saldo anterior
+            //1.Ventas
+            //2.Carne
+            //3.Traslados entrada
+            //4.Gastos Empresa
+            //5.Entregas
+            //6.Franquicia
+            //7.Saldo
+            //8.Traslados salida
+            IList<frMercaderiaSemana> _datos = new List<frMercaderiaSemana>();
+
+            switch (id)
+            {
+                case 1:
+                    _datos = datos.MercaderiaDia(semana, suc, tipo, false, false);                    
+                    break;
+
+                case 2: 
+                    IList<frCarne> carne = datos.Carne(semana, suc, false);
+                    foreach(var item in carne)
+                    {
+                        _datos.Add(new frMercaderiaSemana
+                        {
+                            ID = 2,
+                            ID_Producto = 0,
+                            Fecha = item.Fecha,
+                            Tipo = 0,
+                            Descripcion = item.Producto,
+                            Items = 0,
+                            Kilos = item.Kilos,
+                            Costo = item.Costo,
+                            Total = item.Total
+                        });
+                    }
+                    break;
+                case 3:
+                    // Traslados entrada
+                    IList<Traslados> traslados = datos.TrasladosDia(semana, suc, false);
+                    foreach (var item in traslados)
+                    {
+                        _datos.Add(new frMercaderiaSemana
+                        {
+                            ID = 3,
+                            ID_Producto = 0,
+                            Fecha = item.Fecha,
+                            Tipo = 0,
+                            Descripcion = item.Descripcion,
+                            Items = 0,
+                            Kilos = item.Kilos,
+                            Costo = item.Costo_Salida,
+                            Total = item.Kilos * item.Costo_Salida
+                        });
+                    }
+                    break;
+                case 4:
+                    // Gastos Empresa
+                    IList<frGastosOficina> g = datos.GastosOficina(semana, suc, true);
+                    foreach (var item in g)
+                    {
+                        _datos.Add(new frMercaderiaSemana
+                        {
+                            ID = 4,
+                            ID_Producto = 0,
+                            Fecha = item.Fecha,
+                            Tipo = 0,
+                            Descripcion = item.Descripcion,
+                            Items = 0,
+                            Kilos = 0,
+                            Costo = 0,
+                            Total = item.Importe
+                        });
+                    }
+                    break;
+
+                case 5:
+                    // Entregas
+                    IList<Entrega> entregas = datos.Entregas(semana, suc, 0);
+                    foreach (var item in entregas)
+                    {
+                        _datos.Add(new frMercaderiaSemana
+                        {
+                            ID = 5,
+                            ID_Producto = 0,
+                            Fecha = item.Fecha,
+                            Tipo = 0,
+                            Descripcion = item.Descripcion,
+                            Items = 0,
+                            Kilos = 0,
+                            Costo = 0,
+                            Total = item.Importe
+                        });
+                    }
+                    break;
+
+                case 8:
+                    // Traslados salida
+                    IList<Traslados> trasladosSalida = datos.TrasladosDia(semana, suc, true);
+                    foreach (var item in trasladosSalida)
+                    {
+                        _datos.Add(new frMercaderiaSemana
+                        {
+                            ID = 3,
+                            ID_Producto = 0,
+                            Fecha = item.Fecha,
+                            Tipo = 0,
+                            Descripcion = item.Descripcion,
+                            Items = 0,
+                            Kilos = item.Kilos,
+                            Costo = item.Costo_Salida,
+                            Total = item.Kilos * item.Costo_Salida
+                        });
+                    }
+                    break;
+
+            }
+
+            return _datos;
         }
     }
 }

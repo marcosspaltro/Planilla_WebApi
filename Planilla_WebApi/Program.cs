@@ -73,7 +73,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -83,6 +82,8 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 //app.UseCors(builder =>
 //{
