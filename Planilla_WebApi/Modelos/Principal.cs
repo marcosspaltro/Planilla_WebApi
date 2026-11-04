@@ -11,5 +11,6 @@
         /// </summary>
         public string Link { get; set; }
         public bool Suma { get; set; }
+        public bool Gasto { get; set; }
     }
 }

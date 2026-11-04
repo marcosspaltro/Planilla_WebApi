@@ -29,7 +29,8 @@ namespace Planilla_WebApi.Conexiones
                         Descripcion = dr["Descripcion"].ToString(),
                         Funcion = dr["Funcion"].ToString(),
                         Link = dr["Link"].ToString(),
-                        Suma = Convert.ToBoolean(dr["Suma"])
+                        Suma = Convert.ToBoolean(dr["Suma"]),
+                        Gasto = Convert.ToBoolean(dr["Gasto"])
                     });
 
                     if (_Principal[^1].Funcion != "" && _Principal[^1].Funcion != null)
@@ -758,6 +759,143 @@ namespace Planilla_WebApi.Conexiones
                 _Datos = null;
                 return _Datos;
             }
+        }
+
+        internal float valor_Franquicia(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT TOP 1 isnull(importe, 0) FROM valor_franquicia WHERE Fecha<=('{fecha:MM/dd/yyy}') AND id_sucursal={sucursal} ORDER BY Fecha DESC", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float valor_Impuestos(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM valor_impuestos WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float valor_Gastos(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM valor_gasto WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float valor_GastosLocal(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM Gastos_Sucursales WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):MM/dd/yyy}' AND id_sucursales={sucursal}", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+        
+
+        internal float valor_CargasSociales(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM valor_cargassociales WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float valor_Insumos(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(ISNULL(S.Costo_Franquicia*Kilos, 0)) FROM vw_Ventas S WHERE S.Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursales={sucursal} AND S.Id_Tipo IN(8, 9, 10)", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float valor_Sueldos(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(ISNULL(Importe, 0)) FROM dbEmpleados.dbo.Retiros S WHERE Tipo<>6 AND S.Suc={sucursal} AND S.Fecha_Imputacion BETWEEN '{fecha:MM/dd/yyy}' AND DATEADD(HOUR, 21, DATEADD(D, 6, '{fecha:MM/dd/yyy}'))", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
+        }
+
+        internal float reintegro_Sueldos(DateTime fecha, int sucursal)
+        {
+            float valor = 0;
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM reintegro_Sueldos WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
+            {
+                cmd.CommandType = CommandType.Text;
+                sql.Open();
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    valor = Convert.ToSingle(result);
+                }
+                sql.Close();
+            }
+            return valor;
         }
     }
 }

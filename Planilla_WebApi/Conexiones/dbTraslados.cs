@@ -13,7 +13,10 @@ namespace Planilla_WebApi.Conexiones
         #region " Traslados "
         public IList<Traslados>? Traslados(int f_sucS, int f_sucE, DateTime fecha, int tipo)
         {
-            string cadena = $"SELECT P.Id, P.Nombre Descripcion, ISNULL((SELECT SUM(V.Kilos) FROM vw_Traslados V WHERE V.Fecha='{fecha:MM/dd/yy}'" +
+            string cadena = $"SELECT P.Id, P.Nombre Descripcion, ISNULL((SELECT SUM(V.cantidad) FROM vw_Traslados V WHERE V.Fecha='{fecha:MM/dd/yy}'" +
+                $" AND v.Suc_Salida={f_sucS} AND v.Suc_Entrada={f_sucE}" +
+                $" AND V.Id_Productos=P.Id), 0)  as cantidad" +
+                $", ISNULL((SELECT SUM(V.Kilos) as kilos FROM vw_Traslados V WHERE V.Fecha='{fecha:MM/dd/yy}'" +
                 $" AND v.Suc_Salida={f_sucS} AND v.Suc_Entrada={f_sucE}" +
                 $" AND V.Id_Productos=P.Id), 0) Kilos " +
                 $"FROM Productos P WHERE P.Id_Tipo={tipo} AND P.Ver=1 ORDER BY P.Id";
@@ -35,6 +38,7 @@ namespace Planilla_WebApi.Conexiones
                         Id_Productos = Convert.ToInt32(dr["Id"]),
                         Descripcion = dr["Descripcion"].ToString(),
                         Id_Tipo = tipo,
+                        cantidad = Convert.ToInt32(dr["cantidad"]),
                         Kilos = Convert.ToSingle(dr["Kilos"])
                     });
                 }
@@ -79,8 +83,8 @@ namespace Planilla_WebApi.Conexiones
                 traslado.Costo_EntradaFR = pr.Precio_Franquicia(traslado.Suc_Entrada, traslado.Id_Productos, traslado.Fecha);
 
 
-                cadena = @"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, Kilos, Costo_Salida, Costo_Entrada, Costo_SalidaFR, Costo_EntradaFR) 
-                            VALUES(@fecha, @sucS, @sucE, @prod, @desc, @kilos, @costoS, @costoE, @costoSFR, @costoEFR)";
+                cadena = @"INSERT INTO Traslados (Fecha, Suc_Salida, Suc_Entrada, Id_Productos, Descripcion, cantidad, Kilos, Costo_Salida, Costo_Entrada, Costo_SalidaFR, Costo_EntradaFR) 
+                            VALUES(@fecha, @sucS, @sucE, @prod, @desc, @cantidad, @kilos, @costoS, @costoE, @costoSFR, @costoEFR)";
                 cmd = new SqlCommand(cadena, sql);
                 cmd.CommandType = CommandType.Text;
                 cmd.Parameters.AddWithValue("@fecha", traslado.Fecha);
@@ -88,6 +92,7 @@ namespace Planilla_WebApi.Conexiones
                 cmd.Parameters.AddWithValue("@sucE", traslado.Suc_Entrada);
                 cmd.Parameters.AddWithValue("@prod", traslado.Id_Productos);
                 cmd.Parameters.AddWithValue("@desc", traslado.Descripcion);
+                cmd.Parameters.AddWithValue("@cantidad", traslado.cantidad);
                 cmd.Parameters.AddWithValue("@kilos", traslado.Kilos);
                 cmd.Parameters.AddWithValue("@costoS", traslado.Costo_Salida);
                 cmd.Parameters.AddWithValue("@costoE", traslado.Costo_Entrada);

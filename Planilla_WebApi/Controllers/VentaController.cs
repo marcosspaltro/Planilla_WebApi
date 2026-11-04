@@ -25,27 +25,23 @@ namespace Planilla_WebApi.Controllers
         // [HttpGet("{suc}"), Authorize]
         // GET: api/Ventas/1
         [HttpGet("{sucursal}")]
-        public async Task<ActionResult<IEnumerable<VentasTipo>>> GetVentasByFecha(int sucursal)
+        public IList<VentasTipo> GetVentasByFecha(int sucursal, bool agrupado = false)
         {
             DateTime fecha = DateTime.Today;
             
             try
             {
-                var Ventas = await _context.vw_VentasTipo
-                    .Where(o => o.Fecha == fecha && o.Id_Sucursales == sucursal)
-                    .OrderBy(o => o.Tipo)
-                    .ToListAsync();
+                IList<VentasTipo>? _ventas;
+                
+                dbVentas db = new dbVentas();
+                
+                _ventas = db.VentasTipo(sucursal, fecha, agrupado);
 
-                if (Ventas == null || Ventas.Count == 0)
-                {
-                    return NotFound();
-                }
-
-                return Ventas;
+                return _ventas;
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return null;
             }
         }
 

@@ -62,6 +62,53 @@ namespace Planilla_WebApi.Conexiones
             }
         }
         
+        public IList<VentasTipo> VentasTipo(int f_suc, DateTime fecha, bool agrupado)
+        {
+            string cadena = $"SELECT P.Id, P.Nombre Descripcion, P.Id_Tipo Tipo" +
+                $", ISNULL((SELECT V.Kilos FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Kilos " +
+                $", ISNULL((SELECT V.Cantidad FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Productos=P.Id), 0) Items " +
+                $"FROM Productos P WHERE P.Ver=1 " +
+                $" ORDER BY P.Id";
+
+            if (agrupado)
+            {
+                cadena = $"SELECT T.Id Tipo, T.Nombre Descripcion" +
+                $", ISNULL((SELECT SUM(V.Kilos) FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Tipo=T.Id), 0) Kilos " +
+                $", ISNULL((SELECT SUM(V.Cantidad) FROM vw_Ventas V WHERE V.Fecha='{fecha:MM/dd/yy}' AND v.Id_Sucursales={f_suc} AND V.Id_Tipo=T.Id), 0) Items " +
+                $" FROM TipoProductos T " +
+                $" ORDER BY T.Id";
+            }
+
+            sql.Open();
+            SqlCommand cmd = new SqlCommand(cadena, sql);
+            cmd.CommandType = CommandType.Text;
+            List<VentasTipo> _Ventas = new();
+            try
+            {
+                SqlDataReader dr = cmd.ExecuteReader();
+                while (dr.Read())
+                {
+                    if (Convert.ToSingle(dr["kilos"]) == 0 && Convert.ToSingle(dr["Items"]) == 0)
+                        continue;
+                    _Ventas.Add(new()
+                    {
+                        Descripcion = dr["Descripcion"].ToString(),
+                        Tipo = Convert.ToInt32(dr["Tipo"]),
+                        Items = Convert.ToInt16(dr["Items"]),
+                        Kilos = Convert.ToSingle(dr["Kilos"])
+                    });
+                }
+                dr.Close();
+                sql.Close();
+                return _Ventas;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                _Ventas = null;
+                return _Ventas;
+            }
+        }
         public void Agregar(Ventas venta)
         {
             sql.Open();
@@ -83,7 +130,7 @@ namespace Planilla_WebApi.Conexiones
                 // Buscar el precio franquicia
                 float pr = 0; 
                 dbPrecios dbp = new dbPrecios();
-                pr = dbp.Precio_Franquicia(venta.Id_Productos, venta.Id_Sucursales, venta.Fecha);
+                pr = dbp.Precio_Franquicia(venta.Id_Sucursales, venta.Id_Productos, venta.Fecha);
               
                 cadena = "INSERT INTO Ventas " +
                     "(Fecha, Id_Sucursales, Id_Proveedores, Id_Productos, Descripcion, Kilos, cantidad, Costo_Venta, Costo_Compra, Costo_Franquicia) " +

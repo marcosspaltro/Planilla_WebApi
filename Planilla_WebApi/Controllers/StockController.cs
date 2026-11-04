@@ -72,6 +72,5 @@ namespace Planilla_WebApi.Controllers
         }
 
 
-
     }
 }

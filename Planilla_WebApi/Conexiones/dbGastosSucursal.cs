@@ -121,11 +121,16 @@ namespace Planilla_WebApi.Conexiones
                 formulas f = new formulas();
                 int viejoID = f.Max_ID("Stock");
 
-                string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos) " +
+                // Buscar el precio franquicia
+                float pr = 0;
+                dbPrecios dbp = new dbPrecios();
+                pr = dbp.Precio_Franquicia(suc, Id_prod, DateTime.Now);
+
+                string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Kilos, Costo_Franquicia) " +
                                         $"VALUES({nfecha}, {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
                                         $" AND Fecha <= {nfecha} ORDER BY Fecha DESC)" +
-                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")}, {pr.ToString().Replace(",", ".")})";
 
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;

@@ -26,6 +26,86 @@ namespace Planilla_WebApi.Controllers
             return datos.Principal(fecha, sucursal);
         }
 
+        // GET: api/franquicia
+        [HttpGet("franquicia")]
+        public float GetFranquicia(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_Franquicia(fecha, sucursal);
+        }
+        
+        // GET: api/Impuestos
+        [HttpGet("impuestos")]
+        public float GetImpuestos(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_Impuestos(fecha, sucursal);
+        }
+       
+        // GET: api/gastos
+        [HttpGet("gastos")]
+        public float GetGastos(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_Gastos(fecha, sucursal);
+        }
+
+        // GET: api/gastos_local
+        [HttpGet("gastos_local")]
+        public float GetGastosLocal(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_GastosLocal(fecha, sucursal);
+        }
+
+        // GET: api/sueldos
+        [HttpGet("sueldos")]
+        public float GetSueldos(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_Sueldos(fecha, sucursal);
+        }
+        
+        // GET: api/reintegrosueldos
+        [HttpGet("reintegrosueldos")]
+        public float GetReintegrosSueldos(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.reintegro_Sueldos(fecha, sucursal);
+        }
+
+        // GET: api/cargas_sociales
+        [HttpGet("cargas_sociales")]
+        public float GetCargasSociales(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_CargasSociales(fecha, sucursal);
+        }
+        
+        // GET: api/insumos
+        [HttpGet("insumos")]
+        public float GetInsumos(DateTime fecha, int sucursal = 1)
+        {
+            Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // convertir la fecha al lunes de la semana
+            fecha = fecha.AddDays(-(int)fecha.DayOfWeek + (int)DayOfWeek.Monday);
+            return datos.valor_Insumos(fecha, sucursal);
+        }
+
         // GET: api/carne
         [HttpGet("carne")]
         public IList<frCarne> GetCarne(DateTime fecha, int sucursal = 1)
@@ -59,7 +139,7 @@ namespace Planilla_WebApi.Controllers
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
 
 
-            return datos.MercaderiaDia(fecha, sucursal, tipo);
+            return datos.MercaderiaDia(fecha, sucursal, tipo, false);
 
         }
 
@@ -194,7 +274,7 @@ namespace Planilla_WebApi.Controllers
 
         // GET: api/entregas
         [HttpGet("entregas")]
-        public IList<Entrega> GetEntregas(DateTime fecha, int sucursal = 1, int tipo = 100)
+        public IList<Entrega> GetEntregas(DateTime fecha, int sucursal, int tipo)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
 
@@ -335,7 +415,7 @@ namespace Planilla_WebApi.Controllers
                             ID = 5,
                             ID_Producto = 0,
                             Fecha = item.Fecha,
-                            Tipo = 0,
+                            Tipo = item.Tipo,
                             Descripcion = item.Descripcion,
                             Items = 0,
                             Kilos = 0,

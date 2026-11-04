@@ -68,14 +68,16 @@ namespace Planilla_WebApi.Conexiones
             {
                 formulas f = new formulas();
                 int viejoID = f.Max_ID("Stock");
+                // Buscar el precio franquicia
+                float prf = 0;
+                dbPrecios dbp = new dbPrecios();
+                prf = dbp.Precio_Franquicia(suc, Id_prod, semana.AddDays(6));
 
                 string cmdText = $"INSERT INTO Stock (Fecha, Id_Sucursales, Id_Productos, Descripcion, Costo, Costo_Franquicia, Kilos) " +
                                         $" VALUES('{semana.AddDays(6):MM/dd/yy}', {suc}, {Id_prod}, (SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), " +
                                         $" (SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC)," +
-                                        $" ISNULL((SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod}" +
-                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC), 0)" +
-                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+                                        $" AND Fecha <= '{semana.AddDays(6):MM/dd/yy}' ORDER BY Fecha DESC)" +                                        
+                                        $", {prf.ToString().Replace(",", ".")}, {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
 
                 SqlCommand command = new SqlCommand(cmdText, sql);
                 command.CommandType = CommandType.Text;

@@ -82,13 +82,16 @@ namespace Planilla_WebApi.Conexiones
                 int viejoID = Max_ID("Ofertas");
                                 
                 Productos pr = new Productos();
+                // Buscar el precio franquicia
+                float prf = 0;
+                dbPrecios dbp = new dbPrecios();
+                prf = dbp.Precio_Franquicia(suc, Id_prod, fecha);
 
-
-                string cmdText = $"INSERT INTO Ofertas (Fecha, ID_Sucursales, ID_Productos, Descripcion, Costo_Original, Costo_Oferta, Kilos) " +
+                string cmdText = $"INSERT INTO Ofertas (Fecha, ID_Sucursales, ID_Productos, Descripcion, Costo_Original, Costo_Oferta, Kilos, Costo_Franquicia) " +
                                         $"VALUES('{fecha:MM/dd/yyy}', {suc}, {Id_prod}, CONCAT((SELECT TOP 1 Nombre FROM Productos WHERE Id = {Id_prod}), ' :: {oferta}') , " +
                                         $"(SELECT TOP 1 Precio FROM Precios_Sucursales WHERE Id_Sucursales = {suc} AND Id_Productos = {Id_prod} AND Fecha <= '{fecha:MM/dd/yyy}' ORDER BY Fecha DESC)" +
                                         $", isnull((SELECT TOP 1 ISNULL(po.Costo, 0) FROM Precios_Ofertas po WHERE po.Id_Productos={Id_prod} AND po.Descripcion LIKE '%{oferta}'), 0)" +
-                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")})";
+                                        $", {Math.Round(Kilos, 3).ToString().Replace(",", ".")}, {prf.ToString().Replace(",", ".")})";
 
                 // Para agregar el precio de la oferta
                 //isnull((SELECT TOP 1 ISNULL(po.Costo, 0) FROM Precios_Ofertas po WHERE po.Id_Productos={Id_prod} AND po.Descripcion='{oferta}'), 0)                

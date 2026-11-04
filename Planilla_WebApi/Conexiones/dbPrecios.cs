@@ -15,7 +15,8 @@ namespace Planilla_WebApi.Conexiones
         {
             sql.Open();
             SqlCommand cmd = new SqlCommand($"SELECT P.Id, P.Nombre, P.Id_Tipo, (SELECT dbo.f_Precio(GETDATE(), {f_suc}, P.Id)) Precio " +
-                $"FROM Productos P WHERE P.Ver=1 AND P.Id >17 AND P.Id_Tipo NOT IN(5, 7, 8, 9, 10, 13) ORDER BY P.Id_Tipo, P.Id", sql);
+                $", (SELECT dbo.f_Precio_fr(GETDATE(), {f_suc}, P.Id)) Precio_Fr " +
+                $" FROM Productos P WHERE P.Ver=1 AND P.Id >17 AND P.Id_Tipo NOT IN(5, 7, 8, 9, 10, 13) ORDER BY P.Id_Tipo, P.Id", sql);
 
             cmd.CommandType = CommandType.Text;
 
@@ -31,7 +32,8 @@ namespace Planilla_WebApi.Conexiones
                         Producto = Convert.ToInt32(dr["ID"]),
                         Descripcion = dr["Nombre"].ToString(),
                         Tipo = Convert.ToInt32(dr["Id_Tipo"]),
-                        Precio = Convert.ToSingle(dr["Precio"])
+                        Precio = Convert.ToSingle(dr["Precio"]),
+                        Precio_Fr = Convert.ToSingle(dr["Precio_Fr"])
                     });
                 }
 
@@ -48,47 +50,7 @@ namespace Planilla_WebApi.Conexiones
             }
         }
         
-        //public Precios Precio_Franquicia(int f_suc, int prod, DateTime? fecha = null)
-        //{
-        //    fecha = fecha ?? DateTime.Today;
-
-        //    sql.Open();
-        //    SqlCommand cmd = new SqlCommand("SELECT TOP 1 Precio FROM Precios_Franquicia WHERE Fecha<=@fecha" +
-        //        $"  AND Id_Productos = @prod AND Id_Sucursales=@suc ORDER BY Fecha DESC", sql);
-
-        //    cmd.CommandType = CommandType.Text;
-        //    cmd.Parameters.AddWithValue("@fecha", fecha);
-        //    cmd.Parameters.AddWithValue("@prod", prod);
-        //    cmd.Parameters.AddWithValue("@suc", f_suc);
-
-        //    Precios _precio = new();
-        //    try
-        //    {
-        //        SqlDataReader dr = cmd.ExecuteReader();
-
-        //        while (dr.Read())
-        //        {
-        //            _precio = new()
-        //            {
-        //                Producto = prod,
-        //                Precio = Convert.ToSingle(dr["Precio"])
-        //            };                    
-        //        }
-
-        //        dr.Close();
-        //        sql.Close();
-
-        //        return _precio;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.Message);
-        //        _precio.Producto = prod;
-        //        _precio.Precio = 0;
-        //        return _precio;
-        //    }
-        //}
-
+      
         public float Precio_Franquicia(int f_suc, int prod, DateTime? fecha = null)
         {
             fecha = fecha ?? DateTime.Today;
@@ -106,10 +68,10 @@ namespace Planilla_WebApi.Conexiones
 
             try
             {
-                precio = cmd.ExecuteNonQuery();
-                if(precio < 0)
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
                 {
-                    precio = 0;
+                    precio = Convert.ToSingle(result);
                 }
             }
             catch (Exception)
