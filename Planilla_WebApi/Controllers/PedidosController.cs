@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
+using Planilla_WebApi.Services;
 
 
 namespace Planilla_WebApi.Controllers
@@ -74,6 +75,15 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Delete(int id)
         {
             Conexiones.dbPedidos datos = new Conexiones.dbPedidos();
+            if (RestriccionFecha.EsSucursal(HttpContext))
+            {
+                DateTime? fechaGuardada = datos.FechaPedido(id);
+                if (fechaGuardada != null && !RestriccionFecha.FechaPermitida(HttpContext, fechaGuardada.Value))
+                {
+                    return BadRequest(RestriccionFecha.Mensaje);
+                }
+            }
+
             bool borrado = datos.BorrarPedido(id);
 
             if (borrado)

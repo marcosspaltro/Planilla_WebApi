@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
+using Planilla_WebApi.Services;
 namespace Planilla_WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -46,6 +47,15 @@ namespace Planilla_WebApi.Controllers
         [HttpPut(), Authorize]
         public ActionResult Put(Efectivo efectivo)
         {
+            if (RestriccionFecha.EsSucursal(HttpContext))
+            {
+                DateTime? fechaGuardada = db.FechaEfectivo(efectivo.Id);
+                if (fechaGuardada != null && !RestriccionFecha.FechaPermitida(HttpContext, fechaGuardada.Value))
+                {
+                    return BadRequest(RestriccionFecha.Mensaje);
+                }
+            }
+
             int filas = db.Modificar_Efectivo(efectivo.Id, efectivo);
             if (filas == 0)
             {
