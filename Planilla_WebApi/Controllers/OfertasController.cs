@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Planilla_WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Modelos;
 
@@ -6,6 +7,8 @@ namespace Planilla_WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Carga semanal: la fecha es la de la semana, no la del día
+    [PermitirFechasAnteriores]
     public class OfertasController : ControllerBase
     {
         public OfertasController(IConfiguration configuration, IUserService userService)

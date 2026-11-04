@@ -260,7 +260,27 @@ namespace Planilla_WebApi.Conexiones
             return d;
         }
 
-
+        // Fecha guardada del registro, o null si no existe. Se usa para que una sucursal
+        // no pueda modificar ni borrar registros de días anteriores.
+        public DateTime? FechaPedido(int id)
+        {
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT Fecha FROM Pedidos WHERE Id = @id", sql))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    sql.Open();
+                    var valor = cmd.ExecuteScalar();
+                    sql.Close();
+                    return valor == null || valor == DBNull.Value ? null : Convert.ToDateTime(valor);
+                }
+            }
+            finally
+            {
+                if (sql.State == ConnectionState.Open)
+                    sql.Close();
+            }
+        }
     }
 }
 

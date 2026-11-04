@@ -34,7 +34,8 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Las sucursales solo pueden cargar o modificar datos del día (ver Services/SoloFechaDeHoy.cs)
+builder.Services.AddControllers(options => options.Filters.Add<Planilla_WebApi.Services.SoloFechaDeHoyFilter>());
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
