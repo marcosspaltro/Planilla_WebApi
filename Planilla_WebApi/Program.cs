@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Planilla_WebApi.Conexiones;
+using Planilla_WebApi.Services;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
@@ -74,6 +75,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+// Control de envios repetidos (Idempotency-Key): crea la tabla si no existe
+try
+{
+    IdempotenciaMiddleware.CrearTabla(builder.Configuration.GetConnectionString("DefaultConnection") ?? "");
+    IdempotenciaMiddleware.Habilitado = true;
+}
+catch (Exception e)
+{
+    app.Logger.LogError(e, "No se pudo crear la tabla IdempotenciaClaves; el control de repetidos queda desactivado");
+}
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -89,6 +101,7 @@ app.UseCors("AllowAll");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<IdempotenciaMiddleware>();
 
 app.MapControllers();
 
