@@ -68,9 +68,13 @@ namespace Planilla_WebApi.Conexiones
 
         internal int Nuevo_Efectivo(Efectivo efectivo)
         {
-            // Insertar un nuevo registro en la tabla Efectivos
+            // Insertar un nuevo registro en la tabla Efectivos.
+            // Solo puede haber un efectivo por sucursal y por día: si ya existe, no inserta y devuelve 0.
             sql.Open();
-            using (SqlCommand cmd = new SqlCommand($"INSERT INTO dbGastos.dbo.Efectivos (Fecha, Id_Sucursal, Importe, Cargado) VALUES (@fecha, @sucursal, @importe, @cargado)", sql))
+            using (SqlCommand cmd = new SqlCommand(@"INSERT INTO dbGastos.dbo.Efectivos (Fecha, Id_Sucursal, Importe, Cargado)
+                SELECT @fecha, @sucursal, @importe, @cargado
+                WHERE NOT EXISTS (SELECT 1 FROM dbGastos.dbo.Efectivos WITH (UPDLOCK, HOLDLOCK)
+                                  WHERE Id_Sucursal = @sucursal AND CAST(Fecha AS date) = CAST(@fecha AS date))", sql))
             {
                 cmd.Parameters.AddWithValue("@fecha", efectivo.Fecha);
                 cmd.Parameters.AddWithValue("@sucursal", efectivo.Sucursal);

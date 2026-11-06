@@ -35,7 +35,8 @@ namespace Planilla_WebApi.Controllers
             int id = db.Nuevo_Efectivo(efectivo);
             if (id == 0)
             {
-                return BadRequest();
+                // Ya hay un efectivo cargado para esa sucursal y ese día
+                return BadRequest("Ya hay un efectivo cargado para ese día. Para cambiar el importe, toque la fila en la tabla.");
             }
             else
             {
