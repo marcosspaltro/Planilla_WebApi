@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
+using Planilla_WebApi.Services;
 
 namespace Planilla_WebApi.Controllers
 {
@@ -212,7 +213,7 @@ namespace Planilla_WebApi.Controllers
         }
 
         // POST: api/efectivo
-        [HttpPost("efectivo"), Authorize]
+        [HttpPost("efectivo"), Authorize, SoloHoyParaTodos]
         public ActionResult Post([FromBody] Efectivo efectivo)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
@@ -282,7 +283,7 @@ namespace Planilla_WebApi.Controllers
         }
 
         // POST: api/entrega
-        [HttpPost("entrega"), Authorize]
+        [HttpPost("entrega"), Authorize, SoloHoyParaTodos]
         public ActionResult Post([FromBody] Entrega entrega)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
@@ -298,6 +299,11 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Delete(int id)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // Las entregas de días anteriores no se pueden borrar
+            if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
+            {
+                return BadRequest(RestriccionFecha.Mensaje);
+            }
             bool result = datos.Eliminar_Entrega(id);
             if (result)
                 return Ok();
@@ -310,6 +316,11 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Put(int id, float importe)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            // Las entregas de días anteriores no se pueden modificar
+            if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
+            {
+                return BadRequest(RestriccionFecha.Mensaje);
+            }
             bool result = datos.Actualizar_Entrega(id, importe);
             if (result)
                 return Ok();

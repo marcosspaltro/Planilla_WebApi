@@ -19,6 +19,15 @@ namespace Planilla_WebApi.Services
     }
 
     /// <summary>
+    /// Marca un controlador o acción donde la regla de "solo el día de hoy" vale para
+    /// todos los usuarios, no solo para las sucursales (por ejemplo Efectivos y Entregas).
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    public class SoloHoyParaTodosAttribute : Attribute
+    {
+    }
+
+    /// <summary>
     /// Reglas de "solo el día de hoy" para los usuarios de sucursal (nivel 1).
     /// Una sucursal solo puede crear, modificar o borrar datos con la fecha de hoy;
     /// los días anteriores quedan de solo lectura. Los usuarios de oficina no se ven afectados.
@@ -122,10 +131,20 @@ namespace Planilla_WebApi.Services
 
             return fecha.Date >= DiaDeCarga(http);
         }
+
+        /// <summary>
+        /// True si se puede modificar o borrar un registro ya guardado con esta fecha.
+        /// Si no se encontró el registro (fecha null) se deja seguir para que responda la base.
+        /// </summary>
+        public static bool PuedeModificarGuardado(HttpContext http, DateTime? fechaGuardada)
+        {
+            return fechaGuardada == null || FechaPermitida(http, fechaGuardada.Value);
+        }
     }
 
     /// <summary>
-    /// Filtro global: en POST/PUT/DELETE de un usuario de sucursal, toda "fecha" que venga
+    /// Filtro global: en POST/PUT/DELETE de un usuario de sucursal (o de cualquier usuario
+    /// en las acciones marcadas con [SoloHoyParaTodos]), toda "fecha" que venga
     /// en la ruta, la query o el cuerpo tiene que ser la de hoy. Los borrados o modificaciones
     /// por Id se controlan además en cada controlador contra la fecha guardada.
     /// </summary>
@@ -165,7 +184,8 @@ namespace Planilla_WebApi.Services
                 return;
             }
 
-            if (!RestriccionFecha.EsSucursal(http))
+            var paraTodos = context.ActionDescriptor.EndpointMetadata.OfType<SoloHoyParaTodosAttribute>().Any();
+            if (!paraTodos && !RestriccionFecha.EsSucursal(http))
             {
                 return;
             }

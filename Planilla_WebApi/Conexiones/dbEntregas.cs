@@ -141,6 +141,27 @@ namespace Planilla_WebApi.Conexiones
             }
         }
 
+        // Fecha guardada de una entrega, o null si no existe
+        internal DateTime? FechaEntrega(int id)
+        {
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT Fecha FROM [dbGastos].[dbo].[Entregas_Sucursales] WHERE ID = @ID", sql))
+                {
+                    cmd.Parameters.AddWithValue("@ID", id);
+                    sql.Open();
+                    var valor = cmd.ExecuteScalar();
+                    sql.Close();
+                    return valor == null || valor == DBNull.Value ? null : Convert.ToDateTime(valor);
+                }
+            }
+            finally
+            {
+                if (sql.State == ConnectionState.Open)
+                    sql.Close();
+            }
+        }
+
         internal bool Eliminar_Entrega(int id)
         {
             // Elimina una entrega por ID
