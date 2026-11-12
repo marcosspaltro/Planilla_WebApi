@@ -7,6 +7,8 @@ namespace Planilla_WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Los efectivos solo se cargan o modifican el día de hoy, para todos los usuarios
+    [SoloHoyParaTodos]
     public class EfectivosController : ControllerBase
     {
         private dbEfectivos db = new dbEfectivos();
@@ -47,13 +49,10 @@ namespace Planilla_WebApi.Controllers
         [HttpPut(), Authorize]
         public ActionResult Put(Efectivo efectivo)
         {
-            if (RestriccionFecha.EsSucursal(HttpContext))
+            // Un efectivo de un día anterior no se puede modificar (ningún usuario)
+            if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, db.FechaEfectivo(efectivo.Id)))
             {
-                DateTime? fechaGuardada = db.FechaEfectivo(efectivo.Id);
-                if (fechaGuardada != null && !RestriccionFecha.FechaPermitida(HttpContext, fechaGuardada.Value))
-                {
-                    return BadRequest(RestriccionFecha.Mensaje);
-                }
+                return BadRequest(RestriccionFecha.Mensaje);
             }
 
             int filas = db.Modificar_Efectivo(efectivo.Id, efectivo);

@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
+using Planilla_WebApi.Services;
 namespace Planilla_WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Las entregas solo se cargan, modifican o borran el día de hoy, para todos los usuarios
+    [SoloHoyParaTodos]
     public class EntregasController : ControllerBase
     {
 
@@ -49,6 +52,38 @@ namespace Planilla_WebApi.Controllers
                 return Ok(id);
             else
                 return BadRequest("No se pudo agregar la entrega.");
+        }
+
+        // PUT: api/Entregas/entrega/5?importe=100
+        [HttpPut("entrega/{id}"), Authorize]
+        public ActionResult Put(int id, float importe)
+        {
+            Conexiones.dbEntregas datos = new Conexiones.dbEntregas();
+            if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
+            {
+                return BadRequest(RestriccionFecha.Mensaje);
+            }
+
+            if (datos.Actualizar_Entrega(id, importe))
+                return Ok();
+            else
+                return BadRequest("No se pudo modificar la entrega.");
+        }
+
+        // DELETE: api/Entregas/entrega/5
+        [HttpDelete("entrega/{id}"), Authorize]
+        public ActionResult Delete(int id)
+        {
+            Conexiones.dbEntregas datos = new Conexiones.dbEntregas();
+            if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
+            {
+                return BadRequest(RestriccionFecha.Mensaje);
+            }
+
+            if (datos.Eliminar_Entrega(id))
+                return Ok();
+            else
+                return BadRequest("No se pudo eliminar la entrega.");
         }
     }
 }
