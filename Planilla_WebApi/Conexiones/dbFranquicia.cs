@@ -905,7 +905,7 @@ namespace Planilla_WebApi.Conexiones
         internal float reintegro_Sueldos(DateTime fecha, int sucursal)
         {
             float valor = 0;
-            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM reintegro_Sueldos WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
+            using (SqlCommand cmd = new SqlCommand($"SELECT SUM(isnull(importe, 0)) FROM dbDatos.dbo.valor_devolucionempleado WHERE Fecha BETWEEN '{fecha:MM/dd/yyy}' AND '{fecha.AddDays(6):yyyy/MM/dd}' AND id_sucursal={sucursal}", sql))
             {
                 cmd.CommandType = CommandType.Text;
                 sql.Open();

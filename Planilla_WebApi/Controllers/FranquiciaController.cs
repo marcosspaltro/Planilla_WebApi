@@ -77,7 +77,9 @@ namespace Planilla_WebApi.Controllers
             return datos.valor_Sueldos(fecha, sucursal);
         }
         
-        // GET: api/reintegrosueldos
+        // GET: api/reintegro_sueldos (la web llama a reintegro_sueldos; se deja reintegrosueldos por compatibilidad)
+        // Toma el valor de dbDatos.dbo.valor_devolucionempleado
+        [HttpGet("reintegro_sueldos")]
         [HttpGet("reintegrosueldos")]
         public float GetReintegrosSueldos(DateTime fecha, int sucursal = 1)
         {
