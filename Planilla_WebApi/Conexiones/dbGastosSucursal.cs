@@ -221,14 +221,25 @@ namespace Planilla_WebApi.Conexiones
         {
             string s = $"{DateTime.Today.ToString("MM/dd/yyy")} {DateTime.Now:HH:mm}";
 
-            SqlCommand command = new SqlCommand($"INSERT INTO logApi (fecha, texto) VALUES('{s}', '{e}')", sql);
-            command.CommandType = CommandType.Text;
-            command.Connection = sql;
-            sql.Open();
-
-            var d = command.ExecuteNonQuery();
-
-            sql.Close();
+            // El log nunca tiene que tirar una excepción: si fallaba (por ejemplo un mensaje
+            // con comillas o la conexión todavía abierta) la API devolvía un 500 sin CORS y
+            // la web lo veía como "no se pudo llegar al servidor".
+            try
+            {
+                using SqlCommand command = new SqlCommand("INSERT INTO logApi (fecha, texto) VALUES(@fecha, @texto)", sql);
+                command.Parameters.AddWithValue("@fecha", s);
+                command.Parameters.AddWithValue("@texto", e ?? "");
+                if (sql.State != ConnectionState.Open) sql.Open();
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("No se pudo escribir el log: " + ex.Message + " / " + e);
+            }
+            finally
+            {
+                if (sql.State == ConnectionState.Open) sql.Close();
+            }
 
         }
 

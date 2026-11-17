@@ -98,6 +98,24 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
+// Errores no controlados: responder 500 desde acá (después de CORS) para que la web reciba
+// el error con los encabezados CORS. Sin esto el navegador lo ve como "no se pudo llegar
+// al servidor" y la carga sin conexión lo reintenta para siempre.
+app.Use(async (ctx, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex) when (!ctx.Response.HasStarted)
+    {
+        app.Logger.LogError(ex, "Error no controlado en {Metodo} {Ruta}", ctx.Request.Method, ctx.Request.Path);
+        ctx.Response.Clear();
+        ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await ctx.Response.WriteAsync("Error interno de la API.");
+    }
+});
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
