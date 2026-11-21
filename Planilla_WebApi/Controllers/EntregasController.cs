@@ -59,6 +59,10 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Put(int id, float importe)
         {
             Conexiones.dbEntregas datos = new Conexiones.dbEntregas();
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlEntregaSucursal, id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
             if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
             {
                 return BadRequest(RestriccionFecha.Mensaje);
@@ -75,6 +79,10 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Delete(int id)
         {
             Conexiones.dbEntregas datos = new Conexiones.dbEntregas();
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlEntregaSucursal, id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
             if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
             {
                 return BadRequest(RestriccionFecha.Mensaje);

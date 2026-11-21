@@ -6,8 +6,8 @@ namespace Planilla_WebApi.Conexiones
 {
     internal class dbFranquicia
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
-        SqlConnection sql2 = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
+        SqlConnection sql2 = new SqlConnection(Conexion.Cadena);
         internal IList<Principal> Principal(DateTime fecha, int sucursal)
         {
             sql.Open();

@@ -8,7 +8,7 @@ namespace Planilla_WebApi.Conexiones
 
         public int Max_ID(string tabla, string Campo_ID = "Id")
         {
-            SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+            SqlConnection sql = new SqlConnection(Conexion.Cadena);
             int d = 0;
 
             try

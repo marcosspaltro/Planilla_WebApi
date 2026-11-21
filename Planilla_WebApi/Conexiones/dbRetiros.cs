@@ -5,7 +5,7 @@ namespace Planilla_WebApi.Conexiones
 {
     internal class dbRetiros
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
 
         internal IList<Retiro> Retiros_Semana(int sucursal, DateTime semana)
         {

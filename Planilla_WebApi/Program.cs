@@ -1,5 +1,6 @@
 global using Planilla_WebApi.Services.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -36,7 +37,12 @@ builder.Services.AddCors(options =>
 // Add services to the container.
 
 // Las sucursales solo pueden cargar o modificar datos del día (ver Services/SoloFechaDeHoy.cs)
-builder.Services.AddControllers(options => options.Filters.Add<Planilla_WebApi.Services.SoloFechaDeHoyFilter>());
+// Sucursales y franquicias solo ven y cargan su propia sucursal (ver Services/RestriccionSucursal.cs)
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<Planilla_WebApi.Services.SoloFechaDeHoyFilter>();
+    options.Filters.Add<Planilla_WebApi.Services.RestriccionSucursalFilter>();
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -68,6 +74,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
+
+// Toda la API exige un token válido, salvo lo marcado con [AllowAnonymous] (el login)
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+// Cadena de conexión de las clases de Conexiones (antes estaba escrita en cada archivo)
+Conexion.Cadena = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 
 // Agregar el DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

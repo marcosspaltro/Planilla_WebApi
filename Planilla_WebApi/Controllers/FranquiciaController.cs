@@ -299,6 +299,10 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Delete(int id)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlEntregaFranquicia, id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
             // Las entregas de días anteriores no se pueden borrar
             if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
             {
@@ -316,6 +320,10 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Put(int id, float importe)
         {
             Conexiones.dbFranquicia datos = new Conexiones.dbFranquicia();
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlEntregaFranquicia, id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
             // Las entregas de días anteriores no se pueden modificar
             if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, datos.FechaEntrega(id)))
             {

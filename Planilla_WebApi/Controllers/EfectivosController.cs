@@ -49,6 +49,12 @@ namespace Planilla_WebApi.Controllers
         [HttpPut(), Authorize]
         public ActionResult Put(Efectivo efectivo)
         {
+            // Solo efectivos de la propia sucursal (sucursales y franquicias)
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlEfectivo, efectivo.Id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
+
             // Un efectivo de un día anterior no se puede modificar (ningún usuario)
             if (!RestriccionFecha.PuedeModificarGuardado(HttpContext, db.FechaEfectivo(efectivo.Id)))
             {

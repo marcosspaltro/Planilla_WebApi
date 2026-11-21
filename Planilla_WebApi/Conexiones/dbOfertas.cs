@@ -7,7 +7,7 @@ namespace Planilla_WebApi.Conexiones
 {
     public class dbOfertas
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
 
         public int Id;
 
@@ -122,8 +122,10 @@ namespace Planilla_WebApi.Conexiones
             try
             {
 
-                SqlCommand command = new SqlCommand($"DELETE FROM Ofertas WHERE Id_Sucursales = {suc} AND Descripcion like '%{oferta}%' AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
+                // El texto de la oferta va como parámetro (antes se pegaba en el SQL)
+                SqlCommand command = new SqlCommand($"DELETE FROM Ofertas WHERE Id_Sucursales = {suc} AND Descripcion like '%' + @oferta + '%' AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} AND id <> " +
                     $" (SELECT TOP 1 id FROM Ofertas WHERE Id_Sucursales = {suc} AND Fecha = '{fecha:MM/dd/yyy}' AND Id_Productos = {Id_prod} ORDER BY Id DESC) ", sql);
+                command.Parameters.AddWithValue("@oferta", oferta ?? "");
                 command.CommandType = CommandType.Text;
                 command.Connection = sql;
                 sql.Open();

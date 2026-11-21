@@ -6,7 +6,7 @@ namespace Planilla_WebApi.Conexiones
 {
     public class dbSebero
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
 
         public int Id;
         public IList<Sebero> Sebo(int suc, DateTime fecha)

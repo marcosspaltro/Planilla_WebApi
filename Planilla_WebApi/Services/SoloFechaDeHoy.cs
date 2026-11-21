@@ -45,11 +45,14 @@ namespace Planilla_WebApi.Services
 
         public const string Mensaje = "Solo se pueden cargar o modificar datos del día de hoy.";
 
-        private static readonly ConcurrentDictionary<string, (int Nivel, DateTime Vence)> cacheNiveles =
+        private static readonly ConcurrentDictionary<string, (int Nivel, int Sucursal, DateTime Vence)> cacheUsuarios =
             new(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>Nivel del usuario logueado, o null si no se pudo determinar.</summary>
-        public static int? NivelUsuario(HttpContext http)
+        /// <summary>
+        /// Nivel y sucursal del usuario logueado (de la tabla UsuariosWeb, guardados 10 minutos),
+        /// o null si no se pudo determinar.
+        /// </summary>
+        public static (int Nivel, int Sucursal)? DatosUsuario(HttpContext http)
         {
             var usuario = http.User?.FindFirstValue(ClaimTypes.Name);
             if (string.IsNullOrEmpty(usuario))
@@ -57,9 +60,9 @@ namespace Planilla_WebApi.Services
                 return null;
             }
 
-            if (cacheNiveles.TryGetValue(usuario, out var guardado) && guardado.Vence > DateTime.Now)
+            if (cacheUsuarios.TryGetValue(usuario, out var guardado) && guardado.Vence > DateTime.Now)
             {
-                return guardado.Nivel;
+                return (guardado.Nivel, guardado.Sucursal);
             }
 
             IList<User>? usuarios;
@@ -69,7 +72,6 @@ namespace Planilla_WebApi.Services
             }
             catch (Exception ex)
             {
-                // Si no se puede consultar el nivel no se bloquea la carga
                 Console.WriteLine(ex.Message);
                 return null;
             }
@@ -85,8 +87,15 @@ namespace Planilla_WebApi.Services
                 return null;
             }
 
-            cacheNiveles[usuario] = (u.Nivel, DateTime.Now.AddMinutes(10));
-            return u.Nivel;
+            cacheUsuarios[usuario] = (u.Nivel, u.Sucursal, DateTime.Now.AddMinutes(10));
+            return (u.Nivel, u.Sucursal);
+        }
+
+        /// <summary>Nivel del usuario logueado, o null si no se pudo determinar.</summary>
+        public static int? NivelUsuario(HttpContext http)
+        {
+            // Si no se puede consultar el nivel no se bloquea la carga
+            return DatosUsuario(http)?.Nivel;
         }
 
         public static bool EsSucursal(HttpContext http)

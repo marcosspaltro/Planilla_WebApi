@@ -6,7 +6,7 @@ namespace Planilla_WebApi.Conexiones
     public class dbSemanas
     {
 
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
 
         public IList<Semanas>? Semanas(int cantidad = 10)
         {

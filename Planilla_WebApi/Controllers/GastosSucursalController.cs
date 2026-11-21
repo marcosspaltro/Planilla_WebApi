@@ -41,6 +41,10 @@ namespace Planilla_WebApi.Controllers
         public ActionResult Delete(int id)
         {
             Conexiones.dbGastosSucursal datos = new Conexiones.dbGastosSucursal();
+            if (!RestriccionSucursal.PuedeUsar(HttpContext, RestriccionSucursal.SucursalDeRegistro(RestriccionSucursal.SqlGasto, id)))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, RestriccionSucursal.Mensaje);
+            }
             if (RestriccionFecha.EsSucursal(HttpContext))
             {
                 DateTime? fechaGuardada = datos.FechaGasto(id);

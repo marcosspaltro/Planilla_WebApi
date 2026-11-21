@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Planilla_WebApi.Services;
 using Microsoft.IdentityModel.Tokens;
 using Planilla_WebApi.Conexiones;
 using System.IdentityModel.Tokens.Jwt;
@@ -30,23 +31,38 @@ namespace Planilla_WebApi.Controllers
         }
 
       
-        [HttpPost("login")]
+        [HttpPost("login"), AllowAnonymous]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
+            const string error = "Error en el usuario o contraseña";
+            var nombre = (request?.Username ?? "").Trim();
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+
+            // Demasiados intentos fallidos: se frena un rato ese usuario y esa dirección
+            if (IntentosLogin.Bloqueado(nombre, ip))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    "Demasiados intentos fallidos. Esperá unos minutos y probá de nuevo.");
+            }
+
             dbUsuarios db = new dbUsuarios();
-            IList<User> usuaros = db.Usuarios();
-
-            user = usuaros.First(x => x.Username.ToLower() == request.Username.ToLower());
-
-            if (user == null)
+            IList<User>? usuaros = db.Usuarios();
+            if (usuaros == null)
             {
-                return BadRequest("Error en el usuario o contraseña");
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "No se pudo consultar los usuarios.");
             }
-            
-            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+
+            var encontrado = usuaros.FirstOrDefault(x => string.Equals(x.Username, nombre, StringComparison.OrdinalIgnoreCase));
+
+            // Mismo mensaje si el usuario no existe o la contraseña está mal
+            if (encontrado == null || !VerifyPasswordHash(request?.Password ?? "", encontrado.PasswordHash, encontrado.PasswordSalt))
             {
-                return BadRequest("Error en el usuario o contraseña");
+                IntentosLogin.Fallido(nombre, ip);
+                return BadRequest(error);
             }
+
+            IntentosLogin.Correcto(nombre, ip);
+            user = encontrado;
             var refreshToken = GenerateRefreshToken();
             SetRefreshToken(refreshToken);
             
@@ -57,7 +73,7 @@ namespace Planilla_WebApi.Controllers
             return Ok(token);
         }
 
-        [HttpPost("refresh-token")]
+        [HttpPost("refresh-token"), AllowAnonymous]
         public async Task<ActionResult<string>> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];

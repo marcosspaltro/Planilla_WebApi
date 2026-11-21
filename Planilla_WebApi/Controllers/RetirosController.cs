@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Planilla_WebApi.Services;
 using Planilla_WebApi.Conexiones;
 using Planilla_WebApi.Modelos;
 
@@ -28,7 +29,9 @@ namespace Planilla_WebApi.Controllers
         }
 
         // GET Listado de empleados con opcinal de nombre a buscar
-        [HttpGet("Empleados", Name = "Empleados")]
+        // Sin sucursal (?nombre=...) busca en todas: las sucursales la usan para cargar retiros
+        // de empleados de otra sucursal. Solo devuelve número, nombre, alta y sucursal.
+        [HttpGet("Empleados", Name = "Empleados"), SinRestriccionSucursal]
         public IList<Empleado> GetEmpleados(int sucursal, string? nombre)
         {
             dbRetiros datos = new dbRetiros();

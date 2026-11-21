@@ -4,7 +4,7 @@ namespace Planilla_WebApi.Conexiones
 {
     public class dbCantClientes
     {
-        SqlConnection sql = new SqlConnection("Data Source=192.168.1.11;Initial Catalog=dbDatos;User Id=Nikorasu;Password=Oficina02");
+        SqlConnection sql = new SqlConnection(Conexion.Cadena);
 
         internal void Agregar(Cant_Clientes c)
         {
