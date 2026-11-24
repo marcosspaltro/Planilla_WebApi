@@ -48,5 +48,40 @@ namespace Planilla_WebApi.Controllers
             }
             return Ok(200);
         }
+
+        // GET: api/StockDiario/Productos?sucursal=1&fecha=2026-11-24
+        // Productos con PedirStock = 1 y los kilos cargados ese día
+        [HttpGet("Productos")]
+        public IList<Stock_Diario_Producto> GetProductos(int sucursal, DateTime fecha)
+        {
+            dbStockDiario datos = new dbStockDiario(_conexion);
+            return datos.Productos(sucursal, fecha);
+        }
+
+        // POST: api/StockDiario/Productos
+        // { fecha, sucursal, productos: [{ id, kilos }] } — reemplaza lo cargado ese día
+        [HttpPost("Productos"), Authorize]
+        public ActionResult PostProductos([FromBody] Stock_Diario_Carga carga)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (carga.sucursal <= 0 || carga.productos == null || carga.productos.Count == 0
+                || carga.productos.Any(p => p.id <= 0 || p.kilos == null || p.kilos < 0))
+            {
+                return BadRequest("Datos inválidos");
+            }
+            try
+            {
+                dbStockDiario datos = new dbStockDiario(_conexion);
+                datos.GuardarProductos(carga);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Algo paso");
+            }
+            return Ok(200);
+        }
     }
 }
